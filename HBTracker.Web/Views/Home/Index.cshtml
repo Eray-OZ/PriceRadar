@@ -1,8 +1,14 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Overview";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<section class="simple-home">
+    <div class="eyebrow"><span class="eyebrow-dot"></span> Hepsiburada price tracker</div>
+    <h1>Track prices. Buy with confidence.</h1>
+    <p>Save a product URL, keep its current price in view, and receive an alert when it changes.</p>
+
+    <div class="simple-home-actions">
+        <a class="button button-primary" asp-controller="Products" asp-action="Index">View tracked products</a>
+        <a class="button button-ghost" asp-controller="Products" asp-action="Add">Add a product</a>
+    </div>
+</section>

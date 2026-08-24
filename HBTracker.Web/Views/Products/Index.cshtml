@@ -1,80 +1,111 @@
 @model List<HBTracker.Data.Entities.TrackedProduct>
 
-<h1>Tracked Products</h1>
-
-<p>
-    <a asp-controller="Products" asp-action="Add">
-        Add Product
-    </a>
-</p>
-
-@if (Model.Count == 0)
-{
-    <p>No tracked products found.</p>
+@{
+    ViewData["Title"] = "Tracked products";
+    var activeCount = Model.Count(product => product.IsActive);
+    var inactiveCount = Model.Count - activeCount;
 }
-else
-{
-    <table>
-        <thead>
-            <tr>
-                <th>Product Name</th>
-                <th>Seller</th>
-                <th>Current Price</th>
-                <th>Product URL</th>
-                <th>Active</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
 
-        <tbody>
-            @foreach (var product in Model)
-            {
-                <tr>
-                    <td>@product.ProductName</td>
+<section class="page-heading">
+    <div>
+        <div class="eyebrow">Your watchlist</div>
+        <h1>Tracked products</h1>
+        <p>Everything you are watching, in one calm overview.</p>
+    </div>
+</section>
 
-                    <td>
-                        @(product.SellerName ?? "Unknown")
-                    </td>
+<section class="stats-grid" aria-label="Tracking summary">
+    <div class="stat-card stat-card-accent">
+        <span class="stat-label">Total products</span>
+        <strong>@Model.Count</strong>
+        <span class="stat-detail">in your watchlist</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-label">Active tracking</span>
+        <strong>@activeCount</strong>
+        <span class="stat-detail"><span class="signal-dot small"></span> checks enabled</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-label">Paused</span>
+        <strong>@inactiveCount</strong>
+        <span class="stat-detail">not checked by Worker</span>
+    </div>
+</section>
 
-                    <td>
-                        @product.CurrentPrice.ToString("N2") TL
-                    </td>
+<section class="panel products-panel">
+    <div class="panel-header">
+        <div>
+            <span class="panel-kicker">PRODUCT MONITOR</span>
+            <h2>Current watchlist</h2>
+        </div>
+        <span class="panel-count">@Model.Count items</span>
+    </div>
 
-                    <td>
-                        <a href="@product.Url"
-                           target="_blank"
-                           rel="noopener noreferrer">
-                            Open Product
-                        </a>
-                    </td>
-
-                    <td>
-                        @(product.IsActive ? "Yes" : "No")
-                    </td>
-
-                    <td>
-                        @if (product.IsActive)
-                        {
-                            <form asp-controller="Products"
-                                  asp-action="DisableTracking"
-                                  method="post">
-
-                                <input type="hidden"
-                                       name="id"
-                                       value="@product.Id" />
-
-                                <button type="submit">
-                                    Disable Tracking
-                                </button>
-                            </form>
-                        }
-                        else
-                        {
-                            <span>Disabled</span>
-                        }
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
+    @if (Model.Count == 0)
+    {
+        <div class="empty-state">
+            <div class="empty-icon">+</div>
+            <h3>Your watchlist is empty</h3>
+            <p>Add a Hepsiburada product to start tracking its price.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-wrap">
+            <table class="products-table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Seller</th>
+                        <th>Current price</th>
+                        <th>Status</th>
+                        <th class="align-right">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var product in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="product-cell">
+                                    <span class="product-avatar">HB</span>
+                                    <div>
+                                        <strong class="product-title">@product.ProductName</strong>
+                                        <a class="product-link" href="@product.Url" target="_blank" rel="noopener noreferrer">
+                                            Open product <span>↗</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="muted-cell">@(product.SellerName ?? "Unknown seller")</td>
+                            <td><strong class="price-value">@product.CurrentPrice.ToString("N2") <small>TL</small></strong></td>
+                            <td>
+                                @if (product.IsActive)
+                                {
+                                    <span class="status-pill status-active"><span></span>Active</span>
+                                }
+                                else
+                                {
+                                    <span class="status-pill status-paused"><span></span>Paused</span>
+                                }
+                            </td>
+                            <td class="align-right">
+                                @if (product.IsActive)
+                                {
+                                    <form asp-controller="Products" asp-action="DisableTracking" method="post" class="inline-form">
+                                        <input type="hidden" name="id" value="@product.Id" />
+                                        <button class="text-button" type="submit">Pause tracking</button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <span class="muted-cell">Paused</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>
