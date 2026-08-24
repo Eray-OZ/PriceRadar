@@ -27,6 +27,16 @@ jobs:
         with:
           dotnet-version: "10.0.x"
 
+      - name: Verify required secrets
+        env:
+          DB_CONNECTION: ${{ secrets.ConnectionStrings__DefaultConnection }}
+          TELEGRAM_TOKEN: ${{ secrets.TelegramBotToken }}
+          TELEGRAM_CHAT_ID: ${{ secrets.ChatId }}
+        run: |
+          test -n "$DB_CONNECTION" || { echo "::error::ConnectionStrings__DefaultConnection is missing or empty"; exit 1; }
+          test -n "$TELEGRAM_TOKEN" || { echo "::error::TelegramBotToken is missing or empty"; exit 1; }
+          test -n "$TELEGRAM_CHAT_ID" || { echo "::error::ChatId is missing or empty"; exit 1; }
+
       - name: Restore Worker
         run: dotnet restore HBTracker.Worker/HBTracker.Worker.csproj
 
