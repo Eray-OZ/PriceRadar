@@ -13,11 +13,13 @@ public class PriceCheckJob
     private readonly HBTrackerDbContext _context;
     private readonly ILogger<PriceCheckJob> _logger;
     private readonly HBScraper _scraper;
-    public PriceCheckJob(HBTrackerDbContext context, ILogger<PriceCheckJob> logger, HBScraper scraper)
+    private readonly TelegramNotifier _telegram;
+    public PriceCheckJob(HBTrackerDbContext context, ILogger<PriceCheckJob> logger, HBScraper scraper, TelegramNotifier telegram)
     {
         _context = context;
         _logger = logger;
         _scraper = scraper;
+        _telegram = telegram;
     }
 
 
@@ -55,6 +57,7 @@ public class PriceCheckJob
     private async Task CheckAndRecordPriceChangeAsync(TrackedProduct product)
     {
         ScrapedProduct scrapedProduct;
+        var message = "";
         try { scrapedProduct = await _scraper.ScrapeProductAsync(product.Url); }
 
         catch (TimeoutException ex)
@@ -80,6 +83,14 @@ public class PriceCheckJob
 
         if (scrapedProduct.Price != product.CurrentPrice)
         {
+
+            message = $@"
+            Product: {scrapedProduct.ProductName}
+            Old Price: {product.CurrentPrice}
+            New Price: {scrapedProduct.Price}
+            Url: {scrapedProduct.Url}          
+            ";
+
             await _context.PriceHistories.AddAsync(
                 new PriceHistory
                 {
@@ -90,13 +101,17 @@ public class PriceCheckJob
             );
             product.CurrentPrice = scrapedProduct.Price;
             product.LastCheckedAt = t;
+            await _context.SaveChangesAsync();
+            await _telegram.SendPriceChangeNotificationAsync(message);
         }
         else
         {
             product.LastCheckedAt = t;
             _logger.LogInformation("{ProductName} price unchanged.", product.ProductName);
+            await _telegram.SendPriceChangeNotificationAsync(product.ProductName + " price unchanged");
+            await _context.SaveChangesAsync();
+
         }
-        await _context.SaveChangesAsync();
 
     }
 

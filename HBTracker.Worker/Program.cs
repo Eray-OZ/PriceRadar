@@ -9,6 +9,7 @@ using Microsoft.Extensions.Hosting;
 
 
 
+
 HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
 
 
@@ -25,13 +26,16 @@ options.UseNpgsql(connectionString));
 builder.Services.AddScoped<PriceCheckJob>();
 builder.Services.AddScoped<HBScraper>();
 
+builder.Services.AddHttpClient<TelegramNotifier>();
+
 using IHost app = builder.Build();
 
 
 using IServiceScope scope = app.Services.CreateScope();
 
-
 PriceCheckJob priceCheckJob =
     scope.ServiceProvider.GetRequiredService<PriceCheckJob>();
 
-await priceCheckJob.RunAsync();
+
+await priceCheckJob.RunAsync(); 
+
