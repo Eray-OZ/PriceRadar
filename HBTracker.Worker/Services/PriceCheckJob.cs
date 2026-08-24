@@ -108,7 +108,6 @@ public class PriceCheckJob
         {
             product.LastCheckedAt = t;
             _logger.LogInformation("{ProductName} price unchanged.", product.ProductName);
-            await _telegram.SendPriceChangeNotificationAsync(product.ProductName + " price unchanged");
             await _context.SaveChangesAsync();
 
         }
