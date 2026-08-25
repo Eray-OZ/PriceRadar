@@ -225,5 +225,4 @@ public class PriceCheckJob
             $"Scraping failed after {MaxScrapeAttempts} attempts for product {product.Id}.");
     }
 
-
 }
