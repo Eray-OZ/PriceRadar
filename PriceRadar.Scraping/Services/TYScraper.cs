@@ -8,6 +8,11 @@ namespace PriceRadar.Scraping.Services;
 public class TYScraper
 {
 
+    private static readonly Regex PricePattern = new(
+     @"\d+(?:\.\d{3})*(?:,\d{2})?\s*TL",
+     RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+
     public async Task<ScrapedProduct> ScrapeProductAsync(string url)
     {
         using IPlaywright playwright =
@@ -74,17 +79,101 @@ public class TYScraper
             });
 
 
+        ILocator typlusOriginalPrice =
+            priceContainer
+                .Locator("div.ty-plus-price-original-price")
+                .First;
+
+
+
         ILocator defaultPrice =
             priceContainer
                 .Locator("span.discounted")
                 .First;
 
 
+        bool typlusVisible = false;
+
+
+        try
+        {
+            await typlusOriginalPrice.WaitForAsync(
+                new LocatorWaitForOptions
+                {
+                    State = WaitForSelectorState.Visible,
+                    Timeout = 10000
+                });
+
+            typlusVisible = true;
+        }
+        catch (TimeoutException)
+        {
+            Console.WriteLine(
+            $"[SCRAPER DIAGNOSTIC] {name}: checkout-price did not become " +
+            "visible within 10000ms. Default-price will be used if available.");
+        }
+
+
+        string? priceString = null;
+        Match? priceMatch = null;
+
+
+
+        if (typlusVisible)
+        {
+            priceString = await typlusOriginalPrice.InnerTextAsync();
+            priceMatch = PricePattern.Match(priceString);
+
+            Console.WriteLine(
+                $"[SCRAPER DIAGNOSTIC] {name}: selected checkout-price. " +
+                $"Raw text: {priceString}");
+        }
+
+        if (priceMatch is null || !priceMatch.Success)
+        {
+            Console.WriteLine(
+                $"[SCRAPER DIAGNOSTIC] {name}: checkout-price was unavailable or " +
+                "did not contain a TL price. Falling back to default-price.");
+
+            await defaultPrice.WaitForAsync(
+                new LocatorWaitForOptions
+                {
+                    State = WaitForSelectorState.Visible,
+                    Timeout = 10000
+                });
+
+            priceString = await defaultPrice.InnerTextAsync();
+            priceMatch = PricePattern.Match(priceString);
+
+            Console.WriteLine(
+                $"[SCRAPER DIAGNOSTIC] {name}: selected default-price. " +
+                $"Raw text: {priceString}");
+        }
+
+        if (priceString is null
+            || priceMatch is null
+            || !priceMatch.Success)
+        {
+            throw new FormatException(
+                $"Could not find a valid price in the current price section: {priceString}");
+        }
+
+        string cleanPrice =
+            priceMatch.Value
+                .Replace("TL", "", StringComparison.OrdinalIgnoreCase)
+                .Trim();
+
+        decimal priceDecimal =
+            decimal.Parse(
+                cleanPrice,
+                CultureInfo.GetCultureInfo("tr-TR"));
+
+
 
         return new ScrapedProduct
         {
             ProductName = name,
-            Price = 10,
+            Price = priceDecimal,
             Url = url,
             Marketplace = "Trendyol"
         };
