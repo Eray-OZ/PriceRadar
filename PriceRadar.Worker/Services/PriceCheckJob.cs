@@ -9,6 +9,9 @@ namespace PriceRadar.Worker.Services;
 
 public class PriceCheckJob
 {
+    private const int MaxScrapeAttempts = 3;
+    private static readonly TimeSpan ScrapeRetryDelay =
+        TimeSpan.FromSeconds(2);
 
     private readonly PriceRadarDbContext _context;
     private readonly ILogger<PriceCheckJob> _logger;
@@ -72,28 +75,8 @@ public class PriceCheckJob
 
         try
         {
-
-            if (string.Equals(
-                    marketplace,
-                    "Trendyol",
-                    StringComparison.OrdinalIgnoreCase))
-            {
-                scrapedProduct =
-                    await _TYScraper.ScrapeProductAsync(product.Url);
-            }
-            else if (string.Equals(
-                         marketplace,
-                         "Hepsiburada",
-                         StringComparison.OrdinalIgnoreCase))
-            {
-                scrapedProduct =
-                    await _HBScraper.ScrapeProductAsync(product.Url);
-            }
-            else
-            {
-                throw new InvalidOperationException(
-                    $"Unsupported marketplace: '{product.Marketplace}'");
-            }
+            scrapedProduct =
+                await ScrapeProductWithRetryAsync(product, marketplace);
         }
 
         catch (TimeoutException ex)
@@ -181,6 +164,65 @@ public class PriceCheckJob
 
         }
 
+    }
+
+    private async Task<ScrapedProduct> ScrapeProductWithRetryAsync(
+        TrackedProduct product,
+        string marketplace)
+    {
+        bool isTrendyol = string.Equals(
+            marketplace,
+            "Trendyol",
+            StringComparison.OrdinalIgnoreCase);
+
+        bool isHepsiburada = string.Equals(
+            marketplace,
+            "Hepsiburada",
+            StringComparison.OrdinalIgnoreCase);
+
+        if (!isTrendyol && !isHepsiburada)
+        {
+            throw new InvalidOperationException(
+                $"Unsupported marketplace: '{product.Marketplace}'");
+        }
+
+        for (int attempt = 1; attempt <= MaxScrapeAttempts; attempt++)
+        {
+            try
+            {
+                _logger.LogInformation(
+                    "[SCRAPE ATTEMPT] ProductId={ProductId}; Attempt={Attempt}/{MaxAttempts}; " +
+                    "Marketplace='{Marketplace}'; Url={Url}",
+                    product.Id,
+                    attempt,
+                    MaxScrapeAttempts,
+                    marketplace,
+                    product.Url);
+
+                if (isTrendyol)
+                {
+                    return await _TYScraper.ScrapeProductAsync(product.Url);
+                }
+
+                return await _HBScraper.ScrapeProductAsync(product.Url);
+            }
+            catch (Exception ex) when (attempt < MaxScrapeAttempts)
+            {
+                _logger.LogWarning(
+                    ex,
+                    "[SCRAPE RETRY] ProductId={ProductId}; Attempt={Attempt}/{MaxAttempts} " +
+                    "failed. Retrying in {RetryDelaySeconds} seconds.",
+                    product.Id,
+                    attempt,
+                    MaxScrapeAttempts,
+                    ScrapeRetryDelay.TotalSeconds);
+
+                await Task.Delay(ScrapeRetryDelay);
+            }
+        }
+
+        throw new InvalidOperationException(
+            $"Scraping failed after {MaxScrapeAttempts} attempts for product {product.Id}.");
     }
 
 

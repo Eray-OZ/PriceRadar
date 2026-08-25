@@ -1,14 +1,14 @@
 :root {
-  --black: #000000;
-  --surface: #1a1a1a;
-  --surface-light: #242424;
-  --white: #ffffff;
-  --muted: #c2c6d8;
+  --black: #11151c;
+  --surface: #242a34;
+  --surface-light: #303744;
+  --white: #f4f6fb;
+  --muted: #b8c0d0;
   --blue: #0066ff;
   --orange: #ff5c00;
   --red: #e32929;
   --line: #ffffff;
-  --line-muted: #424242;
+  --line-muted: #505968;
   --font-display: "Montserrat", Arial, sans-serif;
   --font-data: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
 }

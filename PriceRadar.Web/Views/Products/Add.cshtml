@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Yeni Ürün Ekle";
+    var selectedMarketplace = Model?.Marketplace ?? "Hepsiburada";
 }
 
 <section class="add-page">
@@ -26,12 +27,12 @@
                     <legend>PAZARYERİ SEÇ</legend>
                     <div class="marketplace-options">
                         <label class="marketplace-option">
-                            <input asp-for="Marketplace" type="radio" value="Hepsiburada" id="marketplace-hepsiburada" checked="@(Model.Marketplace == "Hepsiburada" || string.IsNullOrEmpty(Model.Marketplace))" />
+                            <input asp-for="Marketplace" type="radio" value="Hepsiburada" id="marketplace-hepsiburada" checked="@(selectedMarketplace == "Hepsiburada" ? "checked" : null)" />
                             <span class="marketplace-option-box"></span>
                             <span>Hepsiburada</span>
                         </label>
                         <label class="marketplace-option">
-                            <input asp-for="Marketplace" type="radio" value="Trendyol" id="marketplace-trendyol" />
+                            <input asp-for="Marketplace" type="radio" value="Trendyol" id="marketplace-trendyol" checked="@(selectedMarketplace == "Trendyol" ? "checked" : null)" />
                             <span class="marketplace-option-box"></span>
                             <span>Trendyol</span>
                         </label>
