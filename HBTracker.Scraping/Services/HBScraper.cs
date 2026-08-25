@@ -88,34 +88,26 @@ public class HBScraper
                 .Locator("[data-test-id='default-price']")
                 .First;
 
-        ILocator visiblePriceSection =
-            priceContainer
-                .Locator(
-                    "[data-test-id='checkout-price']:visible, " +
-                    "[data-test-id='default-price']:visible")
-                .First;
-
+        bool checkoutPriceVisible = false;
         try
         {
-            await visiblePriceSection.WaitForAsync(
+            await checkoutPrice.WaitForAsync(
                 new LocatorWaitForOptions
                 {
                     State = WaitForSelectorState.Visible,
                     Timeout = 10000
                 });
+
+            checkoutPriceVisible = true;
         }
         catch (TimeoutException)
         {
             Console.WriteLine(
-                $"[SCRAPER DIAGNOSTIC] {name}: no visible checkout-price or " +
-                "default-price appeared within 10000ms.");
-
-            throw;
+                $"[SCRAPER DIAGNOSTIC] {name}: checkout-price did not become " +
+                "visible within 10000ms. Default-price will be used if available.");
         }
 
         int checkoutPriceCount = await checkoutPrice.CountAsync();
-        bool checkoutPriceVisible = checkoutPriceCount > 0
-            && await checkoutPrice.IsVisibleAsync();
         int defaultPriceCount = await defaultPrice.CountAsync();
 
         Console.WriteLine(
