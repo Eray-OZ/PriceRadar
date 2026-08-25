@@ -50,7 +50,7 @@ public class TYScraper
                 WaitUntil = WaitUntilState.DOMContentLoaded
             });
 
-        await SelectTurkeyIfRequiredAsync(page);
+        await SelectTurkeyIfRequiredAsync(page, url);
 
 
 
@@ -239,7 +239,9 @@ public class TYScraper
         }
     }
 
-    private static async Task SelectTurkeyIfRequiredAsync(IPage page)
+    private static async Task SelectTurkeyIfRequiredAsync(
+        IPage page,
+        string productUrl)
     {
         if (!page.Url.Contains(
                 "/select-country",
@@ -290,9 +292,12 @@ public class TYScraper
 
         await selectButton.ClickAsync();
 
-        await page.WaitForURLAsync(
-            new Regex("^(?!.*\\/select-country).*"),
-            new PageWaitForURLOptions { Timeout = 30000 });
+        await page.GotoAsync(
+            productUrl,
+            new PageGotoOptions
+            {
+                WaitUntil = WaitUntilState.DOMContentLoaded
+            });
     }
 
 }
