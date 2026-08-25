@@ -124,7 +124,7 @@ public class HBScraper
 
             Console.WriteLine(
                 $"[SCRAPER DIAGNOSTIC] {name}: selected checkout-price. " +
-                $"Raw text: {priceString}");
+                $"Matched price: {priceMatch.Value}; Raw text: {priceString}");
         }
 
         if (priceMatch is null || !priceMatch.Success)
@@ -145,7 +145,7 @@ public class HBScraper
 
             Console.WriteLine(
                 $"[SCRAPER DIAGNOSTIC] {name}: selected default-price. " +
-                $"Raw text: {priceString}");
+                $"Matched price: {priceMatch.Value}; Raw text: {priceString}");
         }
 
         if (priceString is null
@@ -165,6 +165,10 @@ public class HBScraper
             decimal.Parse(
                 cleanPrice,
                 CultureInfo.GetCultureInfo("tr-TR"));
+
+        Console.WriteLine(
+            $"[SCRAPER DIAGNOSTIC] {name}: parsed price={priceDecimal}; " +
+            $"URL={url}");
 
 
 

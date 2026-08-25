@@ -35,6 +35,8 @@ public class TYScraper : IAsyncDisposable
         IPage page,
         string url)
     {
+        Console.WriteLine(
+            $"[TRENDYOL FLOW] Requested product URL: {url}");
 
         await page.GotoAsync(
             url,
@@ -43,7 +45,13 @@ public class TYScraper : IAsyncDisposable
                 WaitUntil = WaitUntilState.DOMContentLoaded
             });
 
+        Console.WriteLine(
+            $"[TRENDYOL FLOW] Initial navigation completed. Page URL: {page.Url}");
+
         await SelectTurkeyIfRequiredAsync(page, url);
+
+        Console.WriteLine(
+            $"[TRENDYOL FLOW] Country step completed. Page URL: {page.Url}");
 
 
 
@@ -90,8 +98,13 @@ public class TYScraper : IAsyncDisposable
         }
 
 
-        string priceString = await FindPriceTextAsync(page, priceContainer);
+        (string priceString, string selectedSelector) =
+            await FindPriceTextAsync(page, priceContainer);
         Match priceMatch = PricePattern.Match(priceString);
+
+        Console.WriteLine(
+            $"[TRENDYOL DIAGNOSTIC] {name}: selected selector='{selectedSelector}'; " +
+            $"Raw text: {priceString}");
 
         string cleanPrice =
             priceMatch.Value
@@ -102,6 +115,9 @@ public class TYScraper : IAsyncDisposable
             decimal.Parse(
                 cleanPrice,
                 CultureInfo.GetCultureInfo("tr-TR"));
+
+        Console.WriteLine(
+            $"[TRENDYOL DIAGNOSTIC] {name}: parsed price={priceDecimal}; URL={url}");
 
 
 
@@ -115,7 +131,7 @@ public class TYScraper : IAsyncDisposable
 
     }
 
-    private static async Task<string> FindPriceTextAsync(
+    private static async Task<(string PriceText, string Selector)> FindPriceTextAsync(
         IPage page,
         ILocator priceContainer)
     {
@@ -145,7 +161,7 @@ public class TYScraper : IAsyncDisposable
 
                 if (PricePattern.IsMatch(candidateText))
                 {
-                    return candidateText;
+                    return (candidateText, selector);
                 }
             }
 
@@ -260,6 +276,10 @@ public class TYScraper : IAsyncDisposable
             return;
         }
 
+        Console.WriteLine(
+            $"[TRENDYOL COUNTRY] Country page detected. " +
+            $"Requested product URL: {productUrl}; Current URL: {page.Url}");
+
         ILocator countrySelect =
             page.Locator("select[data-testid='country-select']");
 
@@ -273,6 +293,8 @@ public class TYScraper : IAsyncDisposable
         await countrySelect.SelectOptionAsync(
             new SelectOptionValue { Value = "Türkiye" });
 
+        string selectedCountry = await countrySelect.InputValueAsync();
+
         ILocator selectButton =
             page.Locator("button[data-testid='country-select-btn-desktop']");
 
@@ -282,6 +304,21 @@ public class TYScraper : IAsyncDisposable
                 State = WaitForSelectorState.Visible,
                 Timeout = 10000
             });
+
+        string? disabledAttribute =
+            await selectButton.GetAttributeAsync("disabled");
+        string? buttonClass =
+            await selectButton.GetAttributeAsync("class");
+        IReadOnlyList<string> visibleButtonTexts =
+            await page.Locator("button:visible").AllInnerTextsAsync();
+
+        Console.WriteLine(
+            $"[TRENDYOL COUNTRY] Selection applied. " +
+            $"SelectedValue='{selectedCountry}'; " +
+            $"ButtonEnabled={await selectButton.IsEnabledAsync()}; " +
+            $"ButtonDisabledAttribute='{disabledAttribute}'; " +
+            $"ButtonClass='{buttonClass}'; " +
+            $"VisibleButtons='{string.Join(" | ", visibleButtonTexts)}'");
 
         for (int attempt = 0; attempt < 100; attempt++)
         {
@@ -295,19 +332,42 @@ public class TYScraper : IAsyncDisposable
 
         if (!await selectButton.IsEnabledAsync())
         {
+            Console.WriteLine(
+                "[TRENDYOL COUNTRY] Select button stayed disabled after 10 seconds.");
             await SaveTrendyolDiagnosticAsync(page, "country-selection");
             throw new TimeoutException(
                 "Trendyol country selection button did not become enabled.");
         }
 
+        Console.WriteLine(
+            "[TRENDYOL COUNTRY] Clicking enabled country selection button.");
+
         await selectButton.ClickAsync();
 
-        await page.GotoAsync(
-            productUrl,
-            new PageGotoOptions
-            {
-                WaitUntil = WaitUntilState.DOMContentLoaded
-            });
+        Console.WriteLine(
+            $"[TRENDYOL COUNTRY] Button click completed. Page URL immediately after click: {page.Url}");
+
+        try
+        {
+            await page.GotoAsync(
+                productUrl,
+                new PageGotoOptions
+                {
+                    WaitUntil = WaitUntilState.DOMContentLoaded
+                });
+
+            Console.WriteLine(
+                $"[TRENDYOL COUNTRY] Product re-navigation completed. Final URL: {page.Url}");
+        }
+        catch (PlaywrightException navigationException)
+        {
+            Console.WriteLine(
+                $"[TRENDYOL COUNTRY] Product re-navigation failed. " +
+                $"Current URL: {page.Url}; Error: {navigationException.Message}");
+
+            await SaveTrendyolDiagnosticAsync(page, "country-after-click-navigation-error");
+            throw;
+        }
     }
 
     public async ValueTask DisposeAsync()

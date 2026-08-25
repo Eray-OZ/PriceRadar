@@ -35,7 +35,10 @@ public class ProductsController : Controller
     [HttpGet]
     public IActionResult Add()
     {
-        return View();
+        return View(new AddProductViewModel
+        {
+            Marketplace = "Hepsiburada"
+        });
     }
 
 

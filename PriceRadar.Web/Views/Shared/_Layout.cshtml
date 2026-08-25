@@ -1,9 +1,12 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] · PriceRadar</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Montserrat:wght@400;500;700;800;900&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/PriceRadar.Web.styles.css" asp-append-version="true" />
 </head>
@@ -11,21 +14,18 @@
     <div class="app-shell">
         <header class="topbar">
             <div class="topbar-inner">
-                <a class="brand" asp-area="" asp-controller="Products" asp-action="Index">
-                    <span class="brand-mark">PR</span>
-                    <span class="brand-copy">
-                        <strong>PriceRadar</strong>
-                        <small>Price intelligence</small>
-                    </span>
+                <a class="brand" asp-area="" asp-controller="Products" asp-action="Index" aria-label="PriceRadar takip edilen ürünler">
+                    <span class="brand-mark" aria-hidden="true">◎</span>
+                    <span class="brand-name">PRICERADAR</span>
                 </a>
 
-                <nav class="main-nav" aria-label="Main navigation">
-                    <a class="nav-link" asp-area="" asp-controller="Products" asp-action="Index">Tracked products</a>
+                <nav class="main-nav" aria-label="Ana navigasyon">
+                    <a class="nav-link nav-link-active" asp-area="" asp-controller="Products" asp-action="Index">TAKİP EDİLENLER</a>
                 </nav>
 
-                <a class="button button-small button-primary" asp-area="" asp-controller="Products" asp-action="Add">
-                    <span class="button-plus">+</span>
-                    Add product
+                <a class="header-add" asp-area="" asp-controller="Products" asp-action="Add">
+                    <span aria-hidden="true">+</span>
+                    YENİ ÜRÜN EKLE
                 </a>
             </div>
         </header>
@@ -34,14 +34,16 @@
             @RenderBody()
         </main>
 
-        <footer class="app-footer">
-            <div>
-                <span class="footer-brand">PriceRadar</span>
-                <span class="footer-divider">·</span>
-                Built for better timing
-            </div>
-            <a class="footer-link" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </footer>
+        <nav class="mobile-nav" aria-label="Mobil navigasyon">
+            <a class="mobile-nav-link mobile-nav-link-active" asp-area="" asp-controller="Products" asp-action="Index">
+                <span aria-hidden="true">▥</span>
+                <small>TAKİP</small>
+            </a>
+            <a class="mobile-nav-link" asp-area="" asp-controller="Products" asp-action="Add">
+                <span aria-hidden="true">＋</span>
+                <small>YENİ ÜRÜN</small>
+            </a>
+        </nav>
     </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

@@ -59,16 +59,32 @@ public class PriceCheckJob
     private async Task CheckAndRecordPriceChangeAsync(TrackedProduct product)
     {
         ScrapedProduct scrapedProduct;
-        var message = "";
+        string marketplace = product.Marketplace?.Trim() ?? string.Empty;
+
+        _logger.LogInformation(
+            "[PRICE CHECK START] ProductId={ProductId}; Marketplace='{Marketplace}'; " +
+            "StoredPrice={StoredPrice}; ProductName='{ProductName}'; Url={Url}",
+            product.Id,
+            marketplace,
+            product.CurrentPrice,
+            product.ProductName,
+            product.Url);
+
         try
         {
 
-            if (product.Marketplace == "Trendyol")
+            if (string.Equals(
+                    marketplace,
+                    "Trendyol",
+                    StringComparison.OrdinalIgnoreCase))
             {
                 scrapedProduct =
                     await _TYScraper.ScrapeProductAsync(product.Url);
             }
-            else if (product.Marketplace == "Hepsiburada")
+            else if (string.Equals(
+                         marketplace,
+                         "Hepsiburada",
+                         StringComparison.OrdinalIgnoreCase))
             {
                 scrapedProduct =
                     await _HBScraper.ScrapeProductAsync(product.Url);
@@ -76,7 +92,7 @@ public class PriceCheckJob
             else
             {
                 throw new InvalidOperationException(
-                    $"Unsupported marketplace: {product.Marketplace}");
+                    $"Unsupported marketplace: '{product.Marketplace}'");
             }
         }
 
@@ -84,8 +100,12 @@ public class PriceCheckJob
         {
             _logger.LogWarning(
                 ex,
-                "Scraping timed out for {ProductName}. Skipping this product.",
-                product.ProductName);
+                "[PRICE CHECK SKIPPED] Timeout; ProductId={ProductId}; " +
+                "Marketplace='{Marketplace}'; ProductName='{ProductName}'; Url={Url}",
+                product.Id,
+                marketplace,
+                product.ProductName,
+                product.Url);
 
             return;
         }
@@ -93,18 +113,34 @@ public class PriceCheckJob
         {
             _logger.LogError(
                 ex,
-                "Unexpected scraping error for {ProductName}. Skipping this product.",
-                product.ProductName);
+                "[PRICE CHECK SKIPPED] Scraping error; ProductId={ProductId}; " +
+                "Marketplace='{Marketplace}'; ProductName='{ProductName}'; Url={Url}",
+                product.Id,
+                marketplace,
+                product.ProductName,
+                product.Url);
 
             return;
         }
 
-        DateTime t = DateTime.UtcNow;
+        _logger.LogInformation(
+            "[PRICE CHECK SCRAPED] ProductId={ProductId}; Marketplace='{Marketplace}'; " +
+            "StoredPrice={StoredPrice}; ScrapedPrice={ScrapedPrice}; " +
+            "ScrapedName='{ScrapedName}'; Url={Url}",
+            product.Id,
+            marketplace,
+            product.CurrentPrice,
+            scrapedProduct.Price,
+            scrapedProduct.ProductName,
+            scrapedProduct.Url);
 
-        if (scrapedProduct.Price != product.CurrentPrice)
+        DateTime t = DateTime.UtcNow;
+        decimal oldPrice = product.CurrentPrice;
+
+        if (scrapedProduct.Price != oldPrice)
         {
 
-            message = $@"
+            string message = $@"
             Product: {scrapedProduct.ProductName}
             Old Price: {product.CurrentPrice}
             New Price: {scrapedProduct.Price}
@@ -123,11 +159,24 @@ public class PriceCheckJob
             product.LastCheckedAt = t;
             await _context.SaveChangesAsync();
             await _telegram.SendPriceChangeNotificationAsync(message);
+
+            _logger.LogInformation(
+                "[PRICE CHECK CHANGED] ProductId={ProductId}; OldPrice={OldPrice}; " +
+                "NewPrice={NewPrice}; PriceHistorySaved=true; TelegramRequested=true",
+                product.Id,
+                oldPrice,
+                scrapedProduct.Price);
         }
         else
         {
             product.LastCheckedAt = t;
-            _logger.LogInformation("{ProductName} price unchanged.", product.ProductName);
+            _logger.LogInformation(
+                "[PRICE CHECK UNCHANGED] ProductId={ProductId}; ProductName='{ProductName}'; " +
+                "StoredPrice={StoredPrice}; ScrapedPrice={ScrapedPrice}",
+                product.Id,
+                product.ProductName,
+                product.CurrentPrice,
+                scrapedProduct.Price);
             await _context.SaveChangesAsync();
 
         }

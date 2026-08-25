@@ -1,111 +1,113 @@
 @model List<PriceRadar.Data.Entities.TrackedProduct>
 
 @{
-    ViewData["Title"] = "Tracked products";
-    var activeCount = Model.Count(product => product.IsActive);
-    var inactiveCount = Model.Count - activeCount;
+    ViewData["Title"] = "Takip Edilen Ürünler";
 }
 
-<section class="page-heading">
-    <div>
-        <div class="eyebrow">Your watchlist</div>
-        <h1>Tracked products</h1>
-        <p>Everything you are watching, in one calm overview.</p>
-    </div>
-</section>
-
-<section class="stats-grid" aria-label="Tracking summary">
-    <div class="stat-card stat-card-accent">
-        <span class="stat-label">Total products</span>
-        <strong>@Model.Count</strong>
-        <span class="stat-detail">in your watchlist</span>
-    </div>
-    <div class="stat-card">
-        <span class="stat-label">Active tracking</span>
-        <strong>@activeCount</strong>
-        <span class="stat-detail"><span class="signal-dot small"></span> checks enabled</span>
-    </div>
-    <div class="stat-card">
-        <span class="stat-label">Paused</span>
-        <strong>@inactiveCount</strong>
-        <span class="stat-detail">not checked by Worker</span>
-    </div>
-</section>
-
-<section class="panel products-panel">
-    <div class="panel-header">
+<section class="tracker-page">
+    <div class="page-heading tracker-heading">
         <div>
-            <span class="panel-kicker">PRODUCT MONITOR</span>
-            <h2>Current watchlist</h2>
+            <p class="eyebrow">PRICE MONITOR / LIVE WATCHLIST</p>
+            <h1>Takip Edilen Ürünler</h1>
+            <p class="page-subtitle">Piyasa verileri canlı olarak izleniyor.</p>
         </div>
-        <span class="panel-count">@Model.Count items</span>
+        <div class="item-counter" aria-label="Takip edilen ürün sayısı">
+            <strong>@Model.Count</strong>
+            <span>ÜRÜN</span>
+        </div>
     </div>
 
     @if (Model.Count == 0)
     {
-        <div class="empty-state">
-            <div class="empty-icon">+</div>
-            <h3>Your watchlist is empty</h3>
-            <p>Add a Hepsiburada product to start tracking its price.</p>
-        </div>
+        <section class="empty-state brutal-panel">
+            <span class="empty-mark" aria-hidden="true">+</span>
+            <p class="eyebrow">WATCHLIST EMPTY</p>
+            <h2>Henüz ürün eklenmedi.</h2>
+            <p>Bir pazaryeri seçip ürün bağlantısını ekleyerek fiyat takibini başlat.</p>
+            <a class="brutal-button brutal-button-primary" asp-controller="Products" asp-action="Add">
+                <span aria-hidden="true">+</span> YENİ ÜRÜN EKLE
+            </a>
+        </section>
     }
     else
     {
-        <div class="table-wrap">
-            <table class="products-table">
-                <thead>
-                    <tr>
-                        <th>Product</th>
-                        <th>Seller</th>
-                        <th>Current price</th>
-                        <th>Status</th>
-                        <th class="align-right">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var product in Model)
-                    {
+        <section class="product-table-shell brutal-panel" aria-label="Takip edilen ürünler tablosu">
+            <div class="table-scroll">
+                <table class="products-table">
+                    <colgroup>
+                        <col class="col-marketplace" />
+                        <col class="col-product" />
+                        <col class="col-seller" />
+                        <col class="col-price" />
+                        <col class="col-check" />
+                        <col class="col-status" />
+                        <col class="col-actions" />
+                    </colgroup>
+                    <thead>
                         <tr>
-                            <td>
-                                <div class="product-cell">
-                                    <span class="product-avatar">PR</span>
-                                    <div>
-                                        <strong class="product-title">@product.ProductName</strong>
-                                        <a class="product-link" href="@product.Url" target="_blank" rel="noopener noreferrer">
-                                            Open product <span>↗</span>
-                                        </a>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="muted-cell">@(product.SellerName ?? "Unknown seller")</td>
-                            <td><strong class="price-value">@product.CurrentPrice.ToString("N2") <small>TL</small></strong></td>
-                            <td>
-                                @if (product.IsActive)
-                                {
-                                    <span class="status-pill status-active"><span></span>Active</span>
-                                }
-                                else
-                                {
-                                    <span class="status-pill status-paused"><span></span>Paused</span>
-                                }
-                            </td>
-                            <td class="align-right">
-                                @if (product.IsActive)
-                                {
-                                    <form asp-controller="Products" asp-action="DisableTracking" method="post" class="inline-form">
-                                        <input type="hidden" name="id" value="@product.Id" />
-                                        <button class="text-button" type="submit">Pause tracking</button>
-                                    </form>
-                                }
-                                else
-                                {
-                                    <span class="muted-cell">Paused</span>
-                                }
-                            </td>
+                            <th>PAZARYERİ</th>
+                            <th>ÜRÜN ADI</th>
+                            <th>SATICI</th>
+                            <th class="align-right">GÜNCEL FİYAT</th>
+                            <th>SON KONTROL</th>
+                            <th>DURUM</th>
+                            <th class="align-center">İŞLEM</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
+                    </thead>
+                    <tbody>
+                        @foreach (var product in Model)
+                        {
+                            var marketplaceClass = string.Equals(product.Marketplace, "Trendyol", StringComparison.OrdinalIgnoreCase)
+                                ? "marketplace-trendyol"
+                                : "marketplace-hepsiburada";
+                            var lastChecked = product.LastCheckedAt.HasValue
+                                ? product.LastCheckedAt.Value.ToLocalTime().ToString("dd MMM HH:mm")
+                                : "—";
+
+                            <tr class="@(product.IsActive ? "is-active" : "is-paused")">
+                                <td data-label="Pazaryeri">
+                                    <span class="marketplace-badge @marketplaceClass">@product.Marketplace</span>
+                                </td>
+                                <td data-label="Ürün adı">
+                                    <div class="product-info">
+                                        <strong class="product-name" title="@product.ProductName">@product.ProductName</strong>
+                                        <a class="product-url" href="@product.Url" target="_blank" rel="noopener noreferrer">ÜRÜNÜ AÇ <span aria-hidden="true">↗</span></a>
+                                    </div>
+                                </td>
+                                <td class="seller-cell" data-label="Satıcı">@(string.IsNullOrWhiteSpace(product.SellerName) ? "Bilinmiyor" : product.SellerName)</td>
+                                <td class="price-cell" data-label="Güncel fiyat">
+                                    ₺@product.CurrentPrice.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo("tr-TR"))
+                                </td>
+                                <td class="checked-cell" data-label="Son kontrol">@lastChecked</td>
+                                <td data-label="Durum">
+                                    @if (product.IsActive)
+                                    {
+                                        <span class="status-badge status-active"><span class="status-dot"></span> AKTİF</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status-badge status-paused"><span class="status-dot"></span> DURAKLATILDI</span>
+                                    }
+                                </td>
+                                <td class="actions-cell" data-label="İşlem">
+                                    <a class="icon-button" href="@product.Url" target="_blank" rel="noopener noreferrer" aria-label="@product.ProductName ürününü aç">↗</a>
+                                    @if (product.IsActive)
+                                    {
+                                        <form asp-controller="Products" asp-action="DisableTracking" method="post" class="inline-form">
+                                            <input type="hidden" name="id" value="@product.Id" />
+                                            <button class="icon-button" type="submit" aria-label="@product.ProductName takibini duraklat">Ⅱ</button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <span class="icon-button icon-button-disabled" aria-hidden="true">▶</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </section>
     }
 </section>

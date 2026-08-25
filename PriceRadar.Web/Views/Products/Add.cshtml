@@ -1,56 +1,59 @@
 @model PriceRadar.Web.Models.AddProductViewModel
 
 @{
-    ViewData["Title"] = "Add product";
+    ViewData["Title"] = "Yeni Ürün Ekle";
 }
 
-<section class="simple-form-page">
-    <a class="back-link" asp-controller="Products" asp-action="Index">← Back to tracked products</a>
+<section class="add-page">
+    <a class="back-link" asp-controller="Products" asp-action="Index">← TAKİP EDİLENLERE DÖN</a>
 
-    <div class="simple-form-header">
-        <div class="eyebrow"><span class="eyebrow-dot"></span> New price watch</div>
-        <h1>Add a product</h1>
-        <p>Choose a marketplace and paste a direct product URL to start tracking it.</p>
-    </div>
-
-    <div class="form-card simple-form-card">
-        <div class="form-card-header">
-            <span class="form-card-icon">+</span>
+    <div class="add-card brutal-panel">
+        <header class="add-card-header">
             <div>
-                <span class="panel-kicker">PRODUCT URL</span>
-                <h2>Add to your watchlist</h2>
+                <p class="eyebrow">PRICE MONITOR / NEW TARGET</p>
+                <h1>Yeni Ürün Ekle</h1>
             </div>
-        </div>
+            <span class="add-card-symbol" aria-hidden="true">◎</span>
+        </header>
 
-        <form asp-controller="Products" asp-action="Add" method="post" class="product-form">
-            <div class="field-group">
-                <div class="field-label-row">
-                    <label asp-for="Marketplace">Marketplace</label>
+        <div class="add-card-body">
+            <p class="add-intro">Takip etmek istediğin ürünün pazaryerini ve doğrudan ürün bağlantısını gir. Ürün adı ve güncel fiyat otomatik olarak alınır.</p>
+
+            <form asp-controller="Products" asp-action="Add" method="post" class="product-form">
+                <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+
+                <fieldset class="field-group">
+                    <legend>PAZARYERİ SEÇ</legend>
+                    <div class="marketplace-options">
+                        <label class="marketplace-option">
+                            <input asp-for="Marketplace" type="radio" value="Hepsiburada" id="marketplace-hepsiburada" checked="@(Model.Marketplace == "Hepsiburada" || string.IsNullOrEmpty(Model.Marketplace))" />
+                            <span class="marketplace-option-box"></span>
+                            <span>Hepsiburada</span>
+                        </label>
+                        <label class="marketplace-option">
+                            <input asp-for="Marketplace" type="radio" value="Trendyol" id="marketplace-trendyol" />
+                            <span class="marketplace-option-box"></span>
+                            <span>Trendyol</span>
+                        </label>
+                    </div>
+                    <span asp-validation-for="Marketplace" class="validation-message"></span>
+                </fieldset>
+
+                <div class="field-group">
+                    <label asp-for="Url">ÜRÜN URL'Sİ</label>
+                    <input asp-for="Url" class="text-input" type="url" placeholder="https://..." autocomplete="url" />
+                    <span class="field-hint">Sadece desteklenen pazaryerlerinden doğrudan bir ürün bağlantısı kullan.</span>
+                    <span asp-validation-for="Url" class="validation-message"></span>
                 </div>
-                <select asp-for="Marketplace" class="text-input">
-                    <option value="Hepsiburada">Hepsiburada</option>
-                    <option value="Trendyol">Trendyol</option>
-                </select>
-            </div>
 
-            <div class="field-group">
-                <div class="field-label-row">
-                    <label asp-for="Url">Product URL</label>
-                    <span>HTTPS</span>
-                </div>
-                <input class="text-input" asp-for="Url" placeholder="https://..." autocomplete="url" />
-                <span asp-validation-for="Url" class="validation-message"></span>
-            </div>
-
-            <button class="button button-primary button-wide" type="submit">
-                Add product to tracker
-                <span class="button-arrow">→</span>
-            </button>
-        </form>
-
-        <div class="form-hint">
-            <span class="hint-icon">i</span>
-            We’ll read the product name and current price automatically.
+                <button class="brutal-button brutal-button-primary submit-button" type="submit">
+                    <span aria-hidden="true">+</span> ÜRÜNÜ EKLE
+                </button>
+            </form>
         </div>
     </div>
 </section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
