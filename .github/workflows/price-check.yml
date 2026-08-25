@@ -23,7 +23,8 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Show checked-out commit
-        run: git log -1 --format='Commit: %H%nMessage: %s'
+        run: |
+          git log -1 --format='Commit: %H%nMessage: %s'
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
