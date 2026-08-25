@@ -57,12 +57,20 @@ public class TYScraper
         ILocator productHeading = page.Locator("h1").First;
 
 
-        await productHeading.WaitForAsync(
-            new LocatorWaitForOptions
-            {
-                State = WaitForSelectorState.Visible,
-                Timeout = 10000
-            });
+        try
+        {
+            await productHeading.WaitForAsync(
+                new LocatorWaitForOptions
+                {
+                    State = WaitForSelectorState.Visible,
+                    Timeout = 30000
+                });
+        }
+        catch (TimeoutException)
+        {
+            await SaveTrendyolDiagnosticAsync(page, "product-page");
+            throw;
+        }
         var name = await productHeading.InnerTextAsync();
 
 
@@ -251,16 +259,40 @@ public class TYScraper
             });
 
         await countrySelect.SelectOptionAsync(
-            new SelectOptionValue { Label = "Türkiye" });
+            new SelectOptionValue { Value = "Türkiye" });
 
         ILocator selectButton =
             page.Locator("button[data-testid='country-select-btn-desktop']");
+
+        await selectButton.WaitForAsync(
+            new LocatorWaitForOptions
+            {
+                State = WaitForSelectorState.Visible,
+                Timeout = 10000
+            });
+
+        for (int attempt = 0; attempt < 100; attempt++)
+        {
+            if (await selectButton.IsEnabledAsync())
+            {
+                break;
+            }
+
+            await page.WaitForTimeoutAsync(100);
+        }
+
+        if (!await selectButton.IsEnabledAsync())
+        {
+            await SaveTrendyolDiagnosticAsync(page, "country-selection");
+            throw new TimeoutException(
+                "Trendyol country selection button did not become enabled.");
+        }
 
         await selectButton.ClickAsync();
 
         await page.WaitForURLAsync(
             new Regex("^(?!.*\\/select-country).*"),
-            new PageWaitForURLOptions { Timeout = 10000 });
+            new PageWaitForURLOptions { Timeout = 30000 });
     }
 
 }
