@@ -240,19 +240,21 @@ public class TYScraper
             return;
         }
 
-        ILocator turkeyOption =
-            page.GetByText(
-                "Türkiye",
-                new PageGetByTextOptions { Exact = true })
-            .First;
+        ILocator countrySelect =
+            page.Locator("select[data-testid='country-select']");
 
-        await turkeyOption.ClickAsync();
+        await countrySelect.WaitForAsync(
+            new LocatorWaitForOptions
+            {
+                State = WaitForSelectorState.Visible,
+                Timeout = 10000
+            });
+
+        await countrySelect.SelectOptionAsync(
+            new SelectOptionValue { Label = "Türkiye" });
 
         ILocator selectButton =
-            page.GetByText(
-                "Select",
-                new PageGetByTextOptions { Exact = true })
-            .Last;
+            page.Locator("button[data-testid='country-select-btn-desktop']");
 
         await selectButton.ClickAsync();
 
