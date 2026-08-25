@@ -50,6 +50,8 @@ public class TYScraper
                 WaitUntil = WaitUntilState.DOMContentLoaded
             });
 
+        await SelectTurkeyIfRequiredAsync(page);
+
 
 
         ILocator productHeading = page.Locator("h1").First;
@@ -227,6 +229,36 @@ public class TYScraper
                 $"[TRENDYOL DIAGNOSTIC] Could not save page diagnostics: " +
                 diagnosticException.Message);
         }
+    }
+
+    private static async Task SelectTurkeyIfRequiredAsync(IPage page)
+    {
+        if (!page.Url.Contains(
+                "/select-country",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        ILocator turkeyOption =
+            page.GetByText(
+                "Türkiye",
+                new PageGetByTextOptions { Exact = true })
+            .First;
+
+        await turkeyOption.ClickAsync();
+
+        ILocator selectButton =
+            page.GetByText(
+                "Select",
+                new PageGetByTextOptions { Exact = true })
+            .Last;
+
+        await selectButton.ClickAsync();
+
+        await page.WaitForURLAsync(
+            new Regex("^(?!.*\\/select-country).*"),
+            new PageWaitForURLOptions { Timeout = 10000 });
     }
 
 }
