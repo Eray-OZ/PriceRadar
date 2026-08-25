@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="PriceRadar.Data/PriceRadar.Data.csproj" />
+  <Project Path="PriceRadar.Scraping/PriceRadar.Scraping.csproj" />
+  <Project Path="PriceRadar.Web/PriceRadar.Web.csproj" />
+  <Project Path="PriceRadar.Worker/PriceRadar.Worker.csproj" />
+</Solution>

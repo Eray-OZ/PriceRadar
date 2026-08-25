@@ -1,4 +1,4 @@
-name: HBTracker Price Check
+name: PriceRadar Price Check
 
 on:
   workflow_dispatch:
@@ -42,13 +42,13 @@ jobs:
           test -n "$TELEGRAM_CHAT_ID" || { echo "::error::ChatId is missing or empty"; exit 1; }
 
       - name: Restore Worker
-        run: dotnet restore HBTracker.Worker/HBTracker.Worker.csproj
+        run: dotnet restore PriceRadar.Worker/PriceRadar.Worker.csproj
 
       - name: Build Worker
-        run: dotnet build HBTracker.Worker/HBTracker.Worker.csproj --configuration Release --no-restore
+        run: dotnet build PriceRadar.Worker/PriceRadar.Worker.csproj --configuration Release --no-restore
 
       - name: Install Playwright Chrome
-        run: pwsh HBTracker.Scraping/bin/Release/net10.0/playwright.ps1 install chrome --with-deps
+        run: pwsh PriceRadar.Scraping/bin/Release/net10.0/playwright.ps1 install chrome --with-deps
 
       - name: Run Worker
-        run: dotnet run --project HBTracker.Worker/HBTracker.Worker.csproj --configuration Release --no-build
+        run: dotnet run --project PriceRadar.Worker/PriceRadar.Worker.csproj --configuration Release --no-build

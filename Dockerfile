@@ -3,16 +3,16 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0-noble AS build
 
 WORKDIR /src
 
-COPY ["HBTracker.Web/HBTracker.Web.csproj", "HBTracker.Web/"]
-COPY ["HBTracker.Data/HBTracker.Data.csproj", "HBTracker.Data/"]
-COPY ["HBTracker.Scraping/HBTracker.Scraping.csproj", "HBTracker.Scraping/"]
+COPY ["PriceRadar.Web/PriceRadar.Web.csproj", "PriceRadar.Web/"]
+COPY ["PriceRadar.Data/PriceRadar.Data.csproj", "PriceRadar.Data/"]
+COPY ["PriceRadar.Scraping/PriceRadar.Scraping.csproj", "PriceRadar.Scraping/"]
 
-RUN dotnet restore "HBTracker.Web/HBTracker.Web.csproj"
+RUN dotnet restore "PriceRadar.Web/PriceRadar.Web.csproj"
 
 COPY . .
-WORKDIR "/src/HBTracker.Web"
+WORKDIR "/src/PriceRadar.Web"
 
-RUN dotnet publish "HBTracker.Web.csproj" \
+RUN dotnet publish "PriceRadar.Web.csproj" \
     --configuration Release \
     --output /app/publish \
     /p:UseAppHost=false
@@ -51,4 +51,4 @@ ENV ASPNETCORE_HTTP_PORTS=10000
 
 EXPOSE 10000
 
-ENTRYPOINT ["dotnet", "HBTracker.Web.dll"]
+ENTRYPOINT ["dotnet", "PriceRadar.Web.dll"]

@@ -1,0 +1,46 @@
+@model PriceRadar.Web.Models.AddProductViewModel
+
+@{
+    ViewData["Title"] = "Add product";
+}
+
+<section class="simple-form-page">
+    <a class="back-link" asp-controller="Products" asp-action="Index">← Back to tracked products</a>
+
+    <div class="simple-form-header">
+        <div class="eyebrow"><span class="eyebrow-dot"></span> New price watch</div>
+        <h1>Add a product</h1>
+        <p>Paste a direct Hepsiburada product URL to start tracking it.</p>
+    </div>
+
+    <div class="form-card simple-form-card">
+        <div class="form-card-header">
+            <span class="form-card-icon">+</span>
+            <div>
+                <span class="panel-kicker">PRODUCT URL</span>
+                <h2>Add to your watchlist</h2>
+            </div>
+        </div>
+
+        <form asp-controller="Products" asp-action="Add" method="post" class="product-form">
+            <div class="field-group">
+                <div class="field-label-row">
+                    <label asp-for="Url">Hepsiburada URL</label>
+                    <span>HTTPS</span>
+                </div>
+                <input class="text-input" asp-for="Url" placeholder="https://www.hepsiburada.com/..." autocomplete="url" />
+                <span asp-validation-for="Url" class="validation-message"></span>
+            </div>
+
+            <button class="button button-primary button-wide" type="submit">
+                Add product to tracker
+                <span class="button-arrow">→</span>
+            </button>
+        </form>
+
+        <div class="form-hint">
+            <span class="hint-icon">i</span>
+            We’ll read the product name and current price automatically.
+        </div>
+    </div>
+</section>
