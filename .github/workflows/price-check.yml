@@ -52,3 +52,11 @@ jobs:
 
       - name: Run Worker
         run: dotnet run --project PriceRadar.Worker/PriceRadar.Worker.csproj --configuration Release --no-build
+
+      - name: Upload Trendyol diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trendyol-diagnostics
+          path: artifacts/trendyol/
+          if-no-files-found: ignore

@@ -71,12 +71,20 @@ public class TYScraper
 
         ILocator priceContainer = page.Locator("div.price-wrapper").First;
 
-        await priceContainer.WaitForAsync(
-            new LocatorWaitForOptions
-            {
-                State = WaitForSelectorState.Visible,
-                Timeout = 10000
-            });
+        try
+        {
+            await priceContainer.WaitForAsync(
+                new LocatorWaitForOptions
+                {
+                    State = WaitForSelectorState.Visible,
+                    Timeout = 10000
+                });
+        }
+        catch (TimeoutException)
+        {
+            await SaveTrendyolDiagnosticAsync(page, name);
+            throw;
+        }
 
 
         ILocator typlusOriginalPrice =
@@ -108,9 +116,6 @@ public class TYScraper
         }
         catch (TimeoutException)
         {
-            Console.WriteLine(
-            $"[SCRAPER DIAGNOSTIC] {name}: checkout-price did not become " +
-            "visible within 10000ms. Default-price will be used if available.");
         }
 
 
@@ -123,18 +128,10 @@ public class TYScraper
         {
             priceString = await typlusOriginalPrice.InnerTextAsync();
             priceMatch = PricePattern.Match(priceString);
-
-            Console.WriteLine(
-                $"[SCRAPER DIAGNOSTIC] {name}: selected checkout-price. " +
-                $"Raw text: {priceString}");
         }
 
         if (priceMatch is null || !priceMatch.Success)
         {
-            Console.WriteLine(
-                $"[SCRAPER DIAGNOSTIC] {name}: checkout-price was unavailable or " +
-                "did not contain a TL price. Falling back to default-price.");
-
             await defaultPrice.WaitForAsync(
                 new LocatorWaitForOptions
                 {
@@ -144,10 +141,6 @@ public class TYScraper
 
             priceString = await defaultPrice.InnerTextAsync();
             priceMatch = PricePattern.Match(priceString);
-
-            Console.WriteLine(
-                $"[SCRAPER DIAGNOSTIC] {name}: selected default-price. " +
-                $"Raw text: {priceString}");
         }
 
         if (priceString is null
@@ -178,6 +171,62 @@ public class TYScraper
             Marketplace = "Trendyol"
         };
 
+    }
+
+    private static async Task SaveTrendyolDiagnosticAsync(
+        IPage page,
+        string productName)
+    {
+        try
+        {
+            string currentUrl = page.Url;
+            string pageTitle = await page.TitleAsync();
+            string bodyText = await page.Locator("body").InnerTextAsync();
+
+            Console.WriteLine(
+                $"[TRENDYOL DIAGNOSTIC] Product: {productName}");
+            Console.WriteLine(
+                $"[TRENDYOL DIAGNOSTIC] URL: {currentUrl}");
+            Console.WriteLine(
+                $"[TRENDYOL DIAGNOSTIC] Title: {pageTitle}");
+            Console.WriteLine(
+                $"[TRENDYOL DIAGNOSTIC] Body text:\n" +
+                bodyText[..Math.Min(bodyText.Length, 3000)]);
+
+            string diagnosticDirectory =
+                Path.Combine("artifacts", "trendyol");
+
+            Directory.CreateDirectory(diagnosticDirectory);
+
+            string diagnosticFileId = Guid.NewGuid().ToString("N");
+            string screenshotPath = Path.Combine(
+                diagnosticDirectory,
+                $"trendyol-{diagnosticFileId}.png");
+            string htmlPath = Path.Combine(
+                diagnosticDirectory,
+                $"trendyol-{diagnosticFileId}.html");
+
+            await page.ScreenshotAsync(
+                new PageScreenshotOptions
+                {
+                    Path = screenshotPath,
+                    FullPage = true
+                });
+
+            string html = await page.ContentAsync();
+            await File.WriteAllTextAsync(htmlPath, html);
+
+            Console.WriteLine(
+                $"[TRENDYOL DIAGNOSTIC] Screenshot saved: {screenshotPath}");
+            Console.WriteLine(
+                $"[TRENDYOL DIAGNOSTIC] HTML saved: {htmlPath}");
+        }
+        catch (Exception diagnosticException)
+        {
+            Console.WriteLine(
+                $"[TRENDYOL DIAGNOSTIC] Could not save page diagnostics: " +
+                diagnosticException.Message);
+        }
     }
 
 }
