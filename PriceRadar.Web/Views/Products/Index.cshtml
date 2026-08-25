@@ -90,7 +90,6 @@
                                     }
                                 </td>
                                 <td class="actions-cell" data-label="İşlem">
-                                    <a class="icon-button" href="@product.Url" target="_blank" rel="noopener noreferrer" aria-label="@product.ProductName ürününü aç">↗</a>
                                     @if (product.IsActive)
                                     {
                                         <form asp-controller="Products" asp-action="DisableTracking" method="post" class="inline-form">

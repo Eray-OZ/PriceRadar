@@ -4,6 +4,7 @@ using PriceRadar.Scraping.Models;
 using PriceRadar.Scraping.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Globalization;
 
 namespace PriceRadar.Worker.Services;
 
@@ -122,13 +123,20 @@ public class PriceCheckJob
 
         if (scrapedProduct.Price != oldPrice)
         {
+            CultureInfo turkishCulture =
+                CultureInfo.GetCultureInfo("tr-TR");
 
-            string message = $@"
-            Product: {scrapedProduct.ProductName}
-            Old Price: {product.CurrentPrice}
-            New Price: {scrapedProduct.Price}
-            Url: {scrapedProduct.Url}          
-            ";
+            string oldPriceText = oldPrice.ToString("N2", turkishCulture);
+            string newPriceText =
+                scrapedProduct.Price.ToString("N2", turkishCulture);
+
+            string message =
+                $"📉 Fiyat Değişikliği\n\n" +
+                $"Ürün: {scrapedProduct.ProductName}\n" +
+                $"Pazaryeri: {marketplace}\n" +
+                $"Eski fiyat: {oldPriceText} TL\n" +
+                $"Yeni fiyat: {newPriceText} TL\n\n" +
+                $"Ürünü görüntüle: {scrapedProduct.Url}";
 
             await _context.PriceHistories.AddAsync(
                 new PriceHistory
