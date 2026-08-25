@@ -88,18 +88,34 @@ public class HBScraper
                 .Locator("[data-test-id='default-price']")
                 .First;
 
+        int checkoutPriceCount = await checkoutPrice.CountAsync();
+        bool checkoutPriceVisible = checkoutPriceCount > 0
+            && await checkoutPrice.IsVisibleAsync();
+        int defaultPriceCount = await defaultPrice.CountAsync();
+
+        Console.WriteLine(
+            $"[SCRAPER DIAGNOSTIC] {name}: checkout-price count={checkoutPriceCount}, " +
+            $"visible={checkoutPriceVisible}; default-price count={defaultPriceCount}.");
+
         string? priceString = null;
         Match? priceMatch = null;
 
-        if (await checkoutPrice.CountAsync() > 0
-            && await checkoutPrice.IsVisibleAsync())
+        if (checkoutPriceVisible)
         {
             priceString = await checkoutPrice.InnerTextAsync();
             priceMatch = PricePattern.Match(priceString);
+
+            Console.WriteLine(
+                $"[SCRAPER DIAGNOSTIC] {name}: selected checkout-price. " +
+                $"Raw text: {priceString}");
         }
 
         if (priceMatch is null || !priceMatch.Success)
         {
+            Console.WriteLine(
+                $"[SCRAPER DIAGNOSTIC] {name}: checkout-price was unavailable or " +
+                "did not contain a TL price. Falling back to default-price.");
+
             await defaultPrice.WaitForAsync(
                 new LocatorWaitForOptions
                 {
@@ -109,6 +125,10 @@ public class HBScraper
 
             priceString = await defaultPrice.InnerTextAsync();
             priceMatch = PricePattern.Match(priceString);
+
+            Console.WriteLine(
+                $"[SCRAPER DIAGNOSTIC] {name}: selected default-price. " +
+                $"Raw text: {priceString}");
         }
 
         if (priceString is null
