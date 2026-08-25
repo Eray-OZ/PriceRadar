@@ -32,11 +32,10 @@ builder.Services.AddHttpClient<TelegramNotifier>();
 using IHost app = builder.Build();
 
 
-using IServiceScope scope = app.Services.CreateScope();
+await using AsyncServiceScope scope = app.Services.CreateAsyncScope();
 
 PriceCheckJob priceCheckJob =
     scope.ServiceProvider.GetRequiredService<PriceCheckJob>();
 
 
 await priceCheckJob.RunAsync(); 
-

@@ -5,43 +5,36 @@ using System.Text.RegularExpressions;
 
 namespace PriceRadar.Scraping.Services;
 
-public class TYScraper
+public class TYScraper : IAsyncDisposable
 {
-
     private static readonly Regex PricePattern = new(
-     @"\d+(?:\.\d{3})*(?:,\d{2})?\s*TL",
-     RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        @"\d+(?:\.\d{3})*(?:,\d{2})?\s*TL",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
+    private IPlaywright? _playwright;
+    private IBrowser? _browser;
+    private IBrowserContext? _context;
 
     public async Task<ScrapedProduct> ScrapeProductAsync(string url)
     {
-        using IPlaywright playwright =
-            await Playwright.CreateAsync();
+        await EnsureBrowserContextAsync();
 
-        await using IBrowser browser =
-            await playwright.Chromium.LaunchAsync(
-                new BrowserTypeLaunchOptions
-                {
-                    Headless = true,
-                    Channel = "chrome",
-                    Args = new[] {
-                    "--disable-blink-features=AutomationControlled",
-                }
-                });
+        IPage page = await _context!.NewPageAsync();
 
-
-        var context = await browser.NewContextAsync(new BrowserNewContextOptions
+        try
         {
-            UserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
-            ViewportSize = new ViewportSize { Width = 1920, Height = 1080 },
-            Locale = "tr-TR",
-            TimezoneId = "Europe/Istanbul"
-        });
+            return await ScrapeProductPageAsync(page, url);
+        }
+        finally
+        {
+            await page.CloseAsync();
+        }
+    }
 
-
-
-
-        IPage page = await context.NewPageAsync();
+    private async Task<ScrapedProduct> ScrapeProductPageAsync(
+        IPage page,
+        string url)
+    {
 
         await page.GotoAsync(
             url,
@@ -183,6 +176,43 @@ public class TYScraper
 
     }
 
+    private async Task EnsureBrowserContextAsync()
+    {
+        if (_context is not null)
+        {
+            return;
+        }
+
+        _playwright = await Playwright.CreateAsync();
+
+        _browser = await _playwright.Chromium.LaunchAsync(
+            new BrowserTypeLaunchOptions
+            {
+                Headless = true,
+                Channel = "chrome",
+                Args = new[]
+                {
+                    "--disable-blink-features=AutomationControlled"
+                }
+            });
+
+        _context = await _browser.NewContextAsync(
+            new BrowserNewContextOptions
+            {
+                UserAgent =
+                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) " +
+                    "AppleWebKit/537.36 (KHTML, like Gecko) " +
+                    "Chrome/125.0.0.0 Safari/537.36",
+                ViewportSize = new ViewportSize
+                {
+                    Width = 1920,
+                    Height = 1080
+                },
+                Locale = "tr-TR",
+                TimezoneId = "Europe/Istanbul"
+            });
+    }
+
     private static async Task SaveTrendyolDiagnosticAsync(
         IPage page,
         string productName)
@@ -298,6 +328,21 @@ public class TYScraper
             {
                 WaitUntil = WaitUntilState.DOMContentLoaded
             });
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_context is not null)
+        {
+            await _context.CloseAsync();
+        }
+
+        if (_browser is not null)
+        {
+            await _browser.CloseAsync();
+        }
+
+        _playwright?.Dispose();
     }
 
 }
