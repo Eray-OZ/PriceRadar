@@ -90,69 +90,8 @@ public class TYScraper : IAsyncDisposable
         }
 
 
-        ILocator typlusOriginalPrice =
-            priceContainer
-                .Locator("div.ty-plus-price-original-price")
-                .First;
-
-
-
-        ILocator defaultPrice =
-            priceContainer
-                .Locator("span.discounted")
-                .First;
-
-
-        bool typlusVisible = false;
-
-
-        try
-        {
-            await typlusOriginalPrice.WaitForAsync(
-                new LocatorWaitForOptions
-                {
-                    State = WaitForSelectorState.Visible,
-                    Timeout = 10000
-                });
-
-            typlusVisible = true;
-        }
-        catch (TimeoutException)
-        {
-        }
-
-
-        string? priceString = null;
-        Match? priceMatch = null;
-
-
-
-        if (typlusVisible)
-        {
-            priceString = await typlusOriginalPrice.InnerTextAsync();
-            priceMatch = PricePattern.Match(priceString);
-        }
-
-        if (priceMatch is null || !priceMatch.Success)
-        {
-            await defaultPrice.WaitForAsync(
-                new LocatorWaitForOptions
-                {
-                    State = WaitForSelectorState.Visible,
-                    Timeout = 10000
-                });
-
-            priceString = await defaultPrice.InnerTextAsync();
-            priceMatch = PricePattern.Match(priceString);
-        }
-
-        if (priceString is null
-            || priceMatch is null
-            || !priceMatch.Success)
-        {
-            throw new FormatException(
-                $"Could not find a valid price in the current price section: {priceString}");
-        }
+        string priceString = await FindPriceTextAsync(page, priceContainer);
+        Match priceMatch = PricePattern.Match(priceString);
 
         string cleanPrice =
             priceMatch.Value
@@ -174,6 +113,47 @@ public class TYScraper : IAsyncDisposable
             Marketplace = "Trendyol"
         };
 
+    }
+
+    private static async Task<string> FindPriceTextAsync(
+        IPage page,
+        ILocator priceContainer)
+    {
+        string[] priceSelectors =
+        {
+            ".ty-plus-price-original-price",
+            ".campaign-price .new-price",
+            "span.discounted",
+            ".new-price"
+        };
+
+        DateTime deadline = DateTime.UtcNow.AddSeconds(10);
+
+        while (DateTime.UtcNow < deadline)
+        {
+            foreach (string selector in priceSelectors)
+            {
+                ILocator candidate = priceContainer.Locator(selector).First;
+
+                if (await candidate.CountAsync() == 0
+                    || !await candidate.IsVisibleAsync())
+                {
+                    continue;
+                }
+
+                string candidateText = await candidate.InnerTextAsync();
+
+                if (PricePattern.IsMatch(candidateText))
+                {
+                    return candidateText;
+                }
+            }
+
+            await page.WaitForTimeoutAsync(250);
+        }
+
+        throw new TimeoutException(
+            "Could not find a visible current price in the Trendyol price section.");
     }
 
     private async Task EnsureBrowserContextAsync()
