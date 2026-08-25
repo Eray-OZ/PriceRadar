@@ -18,6 +18,7 @@ options.UseNpgsql(connectionString));
 
 
 builder.Services.AddScoped<HBScraper>();
+builder.Services.AddScoped<TYScraper>();
 
 
 var app = builder.Build();

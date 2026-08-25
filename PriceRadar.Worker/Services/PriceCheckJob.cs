@@ -12,13 +12,15 @@ public class PriceCheckJob
 
     private readonly PriceRadarDbContext _context;
     private readonly ILogger<PriceCheckJob> _logger;
-    private readonly HBScraper _scraper;
+    private readonly HBScraper _HBScraper;
+    private readonly TYScraper _TYScraper;
     private readonly TelegramNotifier _telegram;
-    public PriceCheckJob(PriceRadarDbContext context, ILogger<PriceCheckJob> logger, HBScraper scraper, TelegramNotifier telegram)
+    public PriceCheckJob(PriceRadarDbContext context, ILogger<PriceCheckJob> logger, HBScraper hbscraper, TYScraper tyscraper, TelegramNotifier telegram)
     {
         _context = context;
         _logger = logger;
-        _scraper = scraper;
+        _HBScraper = hbscraper;
+        _TYScraper = tyscraper;
         _telegram = telegram;
     }
 
@@ -58,7 +60,25 @@ public class PriceCheckJob
     {
         ScrapedProduct scrapedProduct;
         var message = "";
-        try { scrapedProduct = await _scraper.ScrapeProductAsync(product.Url); }
+        try
+        {
+
+            if (product.Marketplace == "Trendyol")
+            {
+                scrapedProduct =
+                    await _TYScraper.ScrapeProductAsync(product.Url);
+            }
+            else if (product.Marketplace == "Hepsiburada")
+            {
+                scrapedProduct =
+                    await _HBScraper.ScrapeProductAsync(product.Url);
+            }
+            else
+            {
+                throw new InvalidOperationException(
+                    $"Unsupported marketplace: {product.Marketplace}");
+            }
+        }
 
         catch (TimeoutException ex)
         {

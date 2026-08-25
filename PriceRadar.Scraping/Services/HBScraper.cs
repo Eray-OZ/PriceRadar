@@ -172,7 +172,8 @@ public class HBScraper
         {
             ProductName = name,
             Price = priceDecimal,
-            Url = url
+            Url = url,
+            Marketplace = "Hepsiburada"
         };
 
     }

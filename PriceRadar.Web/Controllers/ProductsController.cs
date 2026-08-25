@@ -11,12 +11,14 @@ namespace PriceRadar.Web.Controllers;
 public class ProductsController : Controller
 {
 
-    private readonly HBScraper _scraper;
+    private readonly HBScraper _HBScraper;
+    private readonly TYScraper _TYScraper;
     private readonly PriceRadarDbContext _context;
 
-    public ProductsController(HBScraper scraper, PriceRadarDbContext context)
+    public ProductsController(HBScraper hbscraper, TYScraper tyscraper, PriceRadarDbContext context)
     {
-        _scraper = scraper;
+        _HBScraper = hbscraper;
+        _TYScraper = tyscraper;
         _context = context;
     }
 
@@ -46,8 +48,24 @@ public class ProductsController : Controller
         }
 
         ScrapedProduct scrapedProduct;
-        try { scrapedProduct = await _scraper.ScrapeProductAsync(productUrl.Url); }
-
+        try
+        {
+            if (productUrl.Marketplace == "Trendyol")
+            {
+                scrapedProduct =
+                    await _TYScraper.ScrapeProductAsync(productUrl.Url);
+            }
+            else if (productUrl.Marketplace == "Hepsiburada")
+            {
+                scrapedProduct =
+                    await _HBScraper.ScrapeProductAsync(productUrl.Url);
+            }
+            else
+            {
+                throw new InvalidOperationException(
+                    $"Unsupported marketplace: {productUrl.Marketplace}");
+            }
+        }
         catch
         {
             return View(productUrl);
@@ -58,6 +76,7 @@ public class ProductsController : Controller
             ProductName = scrapedProduct.ProductName,
             CurrentPrice = scrapedProduct.Price,
             Url = productUrl.Url,
+            Marketplace = productUrl.Marketplace,
             IsActive = true,
             CreatedAt = DateTime.UtcNow
         });

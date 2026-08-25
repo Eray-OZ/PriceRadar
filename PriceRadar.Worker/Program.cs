@@ -25,6 +25,7 @@ options.UseNpgsql(connectionString));
 
 builder.Services.AddScoped<PriceCheckJob>();
 builder.Services.AddScoped<HBScraper>();
+builder.Services.AddScoped<TYScraper>();
 
 builder.Services.AddHttpClient<TelegramNotifier>();
 
