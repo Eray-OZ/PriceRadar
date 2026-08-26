@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using PriceRadar.Web.Models;
 using PriceRadar.Data.Context;
 using PriceRadar.Data.Entities;
@@ -31,7 +32,15 @@ public class ProductsController : Controller
     [HttpGet]
     public async Task<IActionResult> Index()
     {
-        var trackedProducts = await _context.TrackedProducts.ToListAsync();
+        if (!TryGetCurrentUserId(out int userId))
+        {
+            return Challenge();
+        }
+
+        var trackedProducts = await _context.TrackedProducts
+            .Where(product => product.UserId == userId)
+            .ToListAsync();
+
         return View(trackedProducts);
     }
 
@@ -49,6 +58,11 @@ public class ProductsController : Controller
     [HttpPost]
     public async Task<IActionResult> Add(AddProductViewModel productUrl)
     {
+        if (!TryGetCurrentUserId(out int userId))
+        {
+            return Challenge();
+        }
+
         if (!ModelState.IsValid)
         {
             return View(productUrl);
@@ -71,7 +85,8 @@ public class ProductsController : Controller
             Url = productUrl.Url,
             Marketplace = productUrl.Marketplace,
             IsActive = true,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            UserId = userId
         };
 
         await _context.TrackedProducts.AddAsync(trackedProduct);
@@ -99,7 +114,14 @@ public class ProductsController : Controller
     [HttpPost]
     public async Task<IActionResult> DisableTracking(int Id)
     {
-        TrackedProduct? trackedProduct = await _context.TrackedProducts.FindAsync(Id);
+        if (!TryGetCurrentUserId(out int userId))
+        {
+            return Challenge();
+        }
+
+        TrackedProduct? trackedProduct = await _context.TrackedProducts
+            .SingleOrDefaultAsync(product =>
+                product.Id == Id && product.UserId == userId);
 
         if (trackedProduct is null)
         {
@@ -115,7 +137,14 @@ public class ProductsController : Controller
     [HttpPost]
     public async Task<IActionResult> Delete(int Id)
     {
-        TrackedProduct? trackedProduct = await _context.TrackedProducts.FindAsync(Id);
+        if (!TryGetCurrentUserId(out int userId))
+        {
+            return Challenge();
+        }
+
+        TrackedProduct? trackedProduct = await _context.TrackedProducts
+            .SingleOrDefaultAsync(product =>
+                product.Id == Id && product.UserId == userId);
         if (trackedProduct is null)
         {
             return NotFound();
@@ -125,6 +154,12 @@ public class ProductsController : Controller
         await _context.SaveChangesAsync();
         return RedirectToAction(nameof(Index));
 
+    }
+
+    private bool TryGetCurrentUserId(out int userId)
+    {
+        string? userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        return int.TryParse(userIdValue, out userId);
     }
 
 
