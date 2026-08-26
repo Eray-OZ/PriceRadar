@@ -1,6 +1,8 @@
 using PriceRadar.Data.Context;
 using PriceRadar.Data.Entities;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using PriceRadar.Web.Services;
@@ -31,8 +33,23 @@ if (string.IsNullOrWhiteSpace(connectionString))
 {
     throw new ArgumentException("Connection String Cannot Be Null");
 }
-builder.Services.AddDbContext<PriceRadarDbContext>(options => 
+builder.Services.AddDbContext<PriceRadarDbContext>(options =>
 options.UseNpgsql(connectionString));
+
+builder.Services.AddDataProtection()
+    .SetApplicationName("PriceRadar")
+    .PersistKeysToDbContext<PriceRadarDbContext>();
+
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedProto;
+
+    if (builder.Environment.IsProduction())
+    {
+        options.KnownIPNetworks.Clear();
+        options.KnownProxies.Clear();
+    }
+});
 
 
 builder.Services.AddHttpClient<GitHubActionsDispatcher>(client =>
@@ -44,6 +61,8 @@ builder.Services.AddHttpClient<GitHubActionsDispatcher>(client =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+app.UseForwardedHeaders();
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
