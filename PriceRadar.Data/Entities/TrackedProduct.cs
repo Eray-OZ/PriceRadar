@@ -11,9 +11,10 @@ public class TrackedProduct
     public string Marketplace { get; set; } = string.Empty;
     public DateTime? LastCheckedAt { get; set; }
     public DateTime CreatedAt { get; set; }
+    public int? UserId { get; set; }
+    public ApplicationUser? User { get; set; }
     public List<PriceHistory> PriceHistories { get; set; } = new List<PriceHistory>();
 
 }
-
 
 
