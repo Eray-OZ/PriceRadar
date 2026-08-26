@@ -68,6 +68,40 @@ public class ProductsController : Controller
 
 
     [HttpGet]
+    public async Task<IActionResult> Status(int Id)
+    {
+        if (!TryGetCurrentUserId(out int userId))
+        {
+            return Unauthorized();
+        }
+
+        TrackedProduct? trackedProduct = await _context.TrackedProducts
+            .AsNoTracking()
+            .SingleOrDefaultAsync(product =>
+                product.Id == Id && product.UserId == userId);
+
+        if (trackedProduct is null)
+        {
+            return NotFound();
+        }
+
+        return Json(new
+        {
+            isReady = trackedProduct.CurrentPrice.HasValue,
+            productName = trackedProduct.ProductName,
+            currentPrice = trackedProduct.CurrentPrice.HasValue
+                ? trackedProduct.CurrentPrice.Value.ToString(
+                    "N2",
+                    System.Globalization.CultureInfo.GetCultureInfo("tr-TR"))
+                : null,
+            lastChecked = trackedProduct.LastCheckedAt.HasValue
+                ? trackedProduct.LastCheckedAt.Value.ToLocalTime().ToString("dd MMM HH:mm")
+                : "—"
+        });
+    }
+
+
+    [HttpGet]
     public IActionResult Add()
     {
         return View(new AddProductViewModel

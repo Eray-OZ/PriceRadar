@@ -4,7 +4,7 @@
     ViewData["Title"] = "Takip Edilen Ürünler";
 }
 
-<section class="tracker-page">
+<section class="tracker-page" data-pending-status-url="@Url.Action("Status", "Products")">
     <div class="page-heading tracker-heading">
         <div>
             <p class="eyebrow">PRICE MONITOR / LIVE WATCHLIST</p>
@@ -72,19 +72,19 @@
                                 ? product.LastCheckedAt.Value.ToLocalTime().ToString("dd MMM HH:mm")
                                 : "—";
 
-                            <tr class="@(product.IsActive ? "is-active" : "is-paused")">
+                            <tr class="@(product.IsActive ? "is-active" : "is-paused") @(product.CurrentPrice.HasValue ? string.Empty : "js-pending-product")" data-product-id="@product.Id">
                                 <td data-label="Pazaryeri">
                                     <span class="marketplace-badge @marketplaceClass">@product.Marketplace</span>
                                 </td>
                                 <td data-label="Ürün adı">
                                     <div class="product-info">
-                                        <strong class="product-name" title="@displayName">@displayName</strong>
+                                        <strong class="product-name js-product-name" title="@displayName">@displayName</strong>
                                         <a class="product-url" href="@product.Url" target="_blank" rel="noopener noreferrer">ÜRÜNÜ AÇ <span aria-hidden="true">↗</span></a>
                                         <a class="product-history-link" asp-controller="Products" asp-action="Details" asp-route-id="@product.Id">FİYAT GEÇMİŞİ <span aria-hidden="true">→</span></a>
                                     </div>
                                 </td>
                                 <td class="seller-cell" data-label="Satıcı">@(string.IsNullOrWhiteSpace(product.SellerName) ? "Bilinmiyor" : product.SellerName)</td>
-                                <td class="price-cell" data-label="Güncel fiyat">
+                                <td class="price-cell js-current-price" data-label="Güncel fiyat">
                                     @if (product.CurrentPrice.HasValue)
                                     {
                                         @:₺@product.CurrentPrice.Value.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo("tr-TR"))
@@ -94,8 +94,8 @@
                                         <span>BEKLENİYOR</span>
                                     }
                                 </td>
-                                <td class="checked-cell" data-label="Son kontrol">@lastChecked</td>
-                                <td data-label="Durum">
+                                <td class="checked-cell js-last-checked" data-label="Son kontrol">@lastChecked</td>
+                                <td class="js-product-status" data-label="Durum">
                                     @if (!product.IsActive)
                                     {
                                         <span class="status-badge status-paused"><span class="status-dot"></span> DURAKLATILDI</span>
