@@ -116,6 +116,13 @@
                                             <button class="icon-button" type="submit" aria-label="@displayName takibini duraklat">Ⅱ</button>
                                         </form>
                                     }
+                                    else
+                                    {
+                                        <form asp-controller="Products" asp-action="ResumeTracking" method="post" class="inline-form">
+                                            <input type="hidden" name="id" value="@product.Id" />
+                                            <button class="icon-button icon-button-resume" type="submit" aria-label="@displayName takibini devam ettir">▶</button>
+                                        </form>
+                                    }
                                     <form asp-controller="Products" asp-action="Delete" method="post" class="inline-form" onsubmit="return confirm('Bu ürünü silmek istediğinizden emin misiniz?');">
                                         <input type="hidden" name="id" value="@product.Id" />
                                         <button class="icon-button icon-button-delete" type="submit" aria-label="@displayName sil">×</button>

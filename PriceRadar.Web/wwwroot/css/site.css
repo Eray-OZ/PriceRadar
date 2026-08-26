@@ -525,6 +525,11 @@ p {
   color: var(--red);
 }
 
+.icon-button-resume {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
 .icon-button-disabled {
   cursor: default;
   opacity: .45;

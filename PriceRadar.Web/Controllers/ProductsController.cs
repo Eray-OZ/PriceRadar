@@ -133,6 +133,28 @@ public class ProductsController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    [HttpPost]
+    public async Task<IActionResult> ResumeTracking(int Id)
+    {
+        if (!TryGetCurrentUserId(out int userId))
+        {
+            return Challenge();
+        }
+
+        TrackedProduct? trackedProduct = await _context.TrackedProducts
+            .SingleOrDefaultAsync(product =>
+                product.Id == Id && product.UserId == userId);
+
+        if (trackedProduct is null)
+        {
+            return NotFound();
+        }
+
+        trackedProduct.IsActive = true;
+        await _context.SaveChangesAsync();
+        return RedirectToAction(nameof(Index));
+    }
+
 
     [HttpPost]
     public async Task<IActionResult> Delete(int Id)
