@@ -116,10 +116,10 @@
                                             <button class="icon-button" type="submit" aria-label="@displayName takibini duraklat">Ⅱ</button>
                                         </form>
                                     }
-                                    else
-                                    {
-                                        <span class="icon-button icon-button-disabled" aria-hidden="true">▶</span>
-                                    }
+                                    <form asp-controller="Products" asp-action="Delete" method="post" class="inline-form" onsubmit="return confirm('Bu ürünü silmek istediğinizden emin misiniz?');">
+                                        <input type="hidden" name="id" value="@product.Id" />
+                                        <button class="icon-button icon-button-delete" type="submit" aria-label="@displayName sil">×</button>
+                                    </form>
                                 </td>
                             </tr>
                         }

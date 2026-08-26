@@ -110,5 +110,20 @@ public class ProductsController : Controller
     }
 
 
+    [HttpPost]
+    public async Task<IActionResult> Delete(int Id)
+    {
+        TrackedProduct? trackedProduct = await _context.TrackedProducts.FindAsync(Id);
+        if (trackedProduct is null)
+        {
+            return NotFound();
+        }
+
+        _context.TrackedProducts.Remove(trackedProduct);
+        await _context.SaveChangesAsync();
+        return RedirectToAction(nameof(Index));
+
+    }
+
 
 }

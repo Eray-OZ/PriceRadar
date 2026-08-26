@@ -271,12 +271,12 @@ p {
 }
 
 .products-table .col-marketplace { width: 13%; }
-.products-table .col-product { width: 25%; }
+.products-table .col-product { width: 21%; }
 .products-table .col-seller { width: 16%; }
 .products-table .col-price { width: 15%; }
 .products-table .col-check { width: 13%; }
 .products-table .col-status { width: 12%; }
-.products-table .col-actions { width: 6%; }
+.products-table .col-actions { width: 10%; }
 
 .products-table th,
 .products-table td {
@@ -479,6 +479,11 @@ p {
   transform: translate(-2px, -2px);
   background: var(--white);
   color: var(--black);
+}
+
+.icon-button-delete {
+  border-color: var(--red);
+  color: var(--red);
 }
 
 .icon-button-disabled {
