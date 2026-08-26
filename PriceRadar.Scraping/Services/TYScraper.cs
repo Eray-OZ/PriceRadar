@@ -79,14 +79,25 @@ public class TYScraper : IAsyncDisposable
 
 
         ILocator productSeller = page.Locator("[data-testid='buyBox-seller']").First;
+        string? sellerName = null;
 
-        await productSeller.WaitForAsync(
-        new LocatorWaitForOptions
+        try
         {
-            State = WaitForSelectorState.Visible,
-            Timeout = 10000
-        });
-        var sellerName = await productSeller.InnerTextAsync();
+            await productSeller.WaitForAsync(
+                new LocatorWaitForOptions
+                {
+                    State = WaitForSelectorState.Visible,
+                    Timeout = 3000
+                });
+
+            sellerName = (await productSeller.InnerTextAsync()).Trim();
+        }
+        catch (TimeoutException)
+        {
+            Console.WriteLine(
+                $"[TRENDYOL DIAGNOSTIC] {name}: seller element was not found. " +
+                "Continuing without seller information.");
+        }
 
 
 
