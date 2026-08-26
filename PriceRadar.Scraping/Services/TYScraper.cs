@@ -78,6 +78,17 @@ public class TYScraper : IAsyncDisposable
 
 
 
+        ILocator productSeller = page.Locator("[data-testid='buyBox-seller']").First;
+
+        await productSeller.WaitForAsync(
+        new LocatorWaitForOptions
+        {
+            State = WaitForSelectorState.Visible,
+            Timeout = 10000
+        });
+        var sellerName = await productSeller.InnerTextAsync();
+
+
 
 
         ILocator priceContainer = page.Locator("div.price-wrapper").First;
@@ -126,7 +137,8 @@ public class TYScraper : IAsyncDisposable
             ProductName = name,
             Price = priceDecimal,
             Url = url,
-            Marketplace = "Trendyol"
+            Marketplace = "Trendyol",
+            SellerName = sellerName
         };
 
     }

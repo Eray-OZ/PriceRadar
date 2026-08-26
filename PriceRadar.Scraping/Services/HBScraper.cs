@@ -64,7 +64,15 @@ public class HBScraper
 
 
 
+        ILocator productSeller = page.Locator("[data-test-id='buyBox-seller']").Locator("a").First;
 
+        await productSeller.WaitForAsync(
+        new LocatorWaitForOptions
+        {
+            State = WaitForSelectorState.Visible,
+            Timeout = 10000
+        });
+        var sellerName = await productSeller.InnerTextAsync();
 
 
         ILocator priceContainer = page.Locator(
@@ -177,7 +185,8 @@ public class HBScraper
             ProductName = name,
             Price = priceDecimal,
             Url = url,
-            Marketplace = "Hepsiburada"
+            Marketplace = "Hepsiburada",
+            SellerName = sellerName
         };
 
     }
