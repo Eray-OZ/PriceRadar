@@ -88,6 +88,8 @@ public class ProductsController : Controller
         return Json(new
         {
             isReady = trackedProduct.CurrentPrice.HasValue,
+            initialScrapeFailed = !trackedProduct.CurrentPrice.HasValue
+                && trackedProduct.InitialScrapeFailed,
             productName = trackedProduct.ProductName,
             currentPrice = trackedProduct.CurrentPrice.HasValue
                 ? trackedProduct.CurrentPrice.Value.ToString(
@@ -98,6 +100,46 @@ public class ProductsController : Controller
                 ? trackedProduct.LastCheckedAt.Value.ToLocalTime().ToString("dd MMM HH:mm")
                 : "—"
         });
+    }
+
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RetryInitialScrape(int Id)
+    {
+        if (!TryGetCurrentUserId(out int userId))
+        {
+            return Challenge();
+        }
+
+        TrackedProduct? trackedProduct = await _context.TrackedProducts
+            .SingleOrDefaultAsync(product =>
+                product.Id == Id && product.UserId == userId);
+
+        if (trackedProduct is null)
+        {
+            return NotFound();
+        }
+
+        if (trackedProduct.CurrentPrice.HasValue)
+        {
+            return RedirectToAction(nameof(Index));
+        }
+
+        trackedProduct.InitialScrapeFailed = false;
+        trackedProduct.LastCheckedAt = null;
+        trackedProduct.IsActive = true;
+
+        await _context.SaveChangesAsync();
+
+        bool workflowDispatched =
+            await _actionsDispatcher.TryDispatchPriceCheckAsync();
+
+        TempData["AddProductMessage"] = workflowDispatched
+            ? "Initial price check started again."
+            : "Retry scheduled for the next price check.";
+
+        return RedirectToAction(nameof(Index));
     }
 
 
@@ -112,6 +154,7 @@ public class ProductsController : Controller
 
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Add(AddProductViewModel productUrl)
     {
         if (!TryGetCurrentUserId(out int userId))
@@ -186,6 +229,7 @@ public class ProductsController : Controller
 
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> DisableTracking(int Id)
     {
         if (!TryGetCurrentUserId(out int userId))
@@ -208,6 +252,7 @@ public class ProductsController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> ResumeTracking(int Id)
     {
         if (!TryGetCurrentUserId(out int userId))
@@ -231,6 +276,7 @@ public class ProductsController : Controller
 
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(int Id)
     {
         if (!TryGetCurrentUserId(out int userId))

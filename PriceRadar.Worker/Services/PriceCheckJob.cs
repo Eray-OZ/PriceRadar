@@ -82,6 +82,8 @@ public class PriceCheckJob
 
         catch (TimeoutException ex)
         {
+            await MarkInitialScrapeFailedAsync(product);
+
             _logger.LogWarning(
                 ex,
                 "[PRICE CHECK SKIPPED] Timeout; ProductId={ProductId}; " +
@@ -95,6 +97,8 @@ public class PriceCheckJob
         }
         catch (Exception ex)
         {
+            await MarkInitialScrapeFailedAsync(product);
+
             _logger.LogError(
                 ex,
                 "[PRICE CHECK SKIPPED] Scraping error; ProductId={ProductId}; " +
@@ -125,6 +129,7 @@ public class PriceCheckJob
             product.ProductName = scrapedProduct.ProductName;
             product.SellerName = scrapedProduct.SellerName;
             product.CurrentPrice = scrapedProduct.Price;
+            product.InitialScrapeFailed = false;
             product.LastCheckedAt = t;
 
             await _context.SaveChangesAsync();
@@ -197,6 +202,26 @@ public class PriceCheckJob
 
         }
 
+    }
+
+    private async Task MarkInitialScrapeFailedAsync(TrackedProduct product)
+    {
+        if (product.CurrentPrice.HasValue)
+        {
+            return;
+        }
+
+        product.InitialScrapeFailed = true;
+        product.LastCheckedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        _logger.LogWarning(
+            "[INITIAL SCRAPE FAILED] ProductId={ProductId}; " +
+            "Marketplace='{Marketplace}'; Url={Url}",
+            product.Id,
+            product.Marketplace,
+            product.Url);
     }
 
     private async Task<ScrapedProduct> ScrapeProductWithRetryAsync(

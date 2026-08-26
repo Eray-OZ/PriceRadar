@@ -4,7 +4,12 @@
     ViewData["Title"] = "Takip Edilen Ürünler";
 }
 
-<section class="tracker-page" data-pending-status-url="@Url.Action("Status", "Products")">
+<section class="tracker-page"
+         data-pending-status-url="@Url.Action("Status", "Products")"
+         data-retry-url="@Url.Action("RetryInitialScrape", "Products")">
+    <div hidden>
+        @Html.AntiForgeryToken()
+    </div>
     <div class="page-heading tracker-heading">
         <div>
             <p class="eyebrow">PRICE MONITOR / LIVE WATCHLIST</p>
@@ -65,14 +70,16 @@
                             var marketplaceClass = string.Equals(product.Marketplace, "Trendyol", StringComparison.OrdinalIgnoreCase)
                                 ? "marketplace-trendyol"
                                 : "marketplace-hepsiburada";
+                            var initialScrapeFailed = !product.CurrentPrice.HasValue
+                                && product.InitialScrapeFailed;
                             var displayName = string.IsNullOrWhiteSpace(product.ProductName)
-                                ? "İlk kontrol bekleniyor"
+                                ? (initialScrapeFailed ? "İlk kontrol başarısız" : "İlk kontrol bekleniyor")
                                 : product.ProductName;
                             var lastChecked = product.LastCheckedAt.HasValue
                                 ? product.LastCheckedAt.Value.ToLocalTime().ToString("dd MMM HH:mm")
                                 : "—";
 
-                            <tr class="@(product.IsActive ? "is-active" : "is-paused") @(product.CurrentPrice.HasValue ? string.Empty : "js-pending-product")" data-product-id="@product.Id">
+                            <tr class="@(product.IsActive ? "is-active" : "is-paused") @(!product.CurrentPrice.HasValue && !initialScrapeFailed ? "js-pending-product" : string.Empty)" data-product-id="@product.Id">
                                 <td data-label="Pazaryeri">
                                     <span class="marketplace-badge @marketplaceClass">@product.Marketplace</span>
                                 </td>
@@ -100,6 +107,10 @@
                                     {
                                         <span class="status-badge status-paused"><span class="status-dot"></span> DURAKLATILDI</span>
                                     }
+                                    else if (initialScrapeFailed)
+                                    {
+                                        <span class="status-badge status-failed"><span class="status-dot"></span> İLK KONTROL BAŞARISIZ</span>
+                                    }
                                     else if (!product.CurrentPrice.HasValue)
                                     {
                                         <span class="status-badge status-pending"><span class="status-dot"></span> İLK KONTROL BEKLENİYOR</span>
@@ -109,7 +120,14 @@
                                         <span class="status-badge status-active"><span class="status-dot"></span> AKTİF</span>
                                     }
                                 </td>
-                                <td class="actions-cell" data-label="İşlem">
+                                <td class="actions-cell js-product-actions" data-label="İşlem">
+                                    @if (product.IsActive && initialScrapeFailed)
+                                    {
+                                        <form asp-controller="Products" asp-action="RetryInitialScrape" method="post" class="inline-form js-retry-form">
+                                            <input type="hidden" name="id" value="@product.Id" />
+                                            <button class="icon-button icon-button-retry" type="submit" aria-label="@displayName tekrar dene">↻</button>
+                                        </form>
+                                    }
                                     @if (product.IsActive)
                                     {
                                         <form asp-controller="Products" asp-action="DisableTracking" method="post" class="inline-form">

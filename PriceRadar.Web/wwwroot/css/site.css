@@ -481,6 +481,11 @@ p {
   color: var(--orange);
 }
 
+.status-failed {
+  border-color: var(--red);
+  color: var(--red);
+}
+
 .tracker-notice {
   margin: 0 0 18px;
   border-left: 4px solid var(--orange);
