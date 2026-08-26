@@ -1,9 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PriceRadar.Web.Models;
-using PriceRadar.Scraping.Services;
 using PriceRadar.Data.Context;
 using PriceRadar.Data.Entities;
-using PriceRadar.Scraping.Models;
+using PriceRadar.Web.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace PriceRadar.Web.Controllers;
@@ -11,21 +10,18 @@ namespace PriceRadar.Web.Controllers;
 public class ProductsController : Controller
 {
 
-    private readonly HBScraper _HBScraper;
-    private readonly TYScraper _TYScraper;
     private readonly PriceRadarDbContext _context;
     private readonly ILogger<ProductsController> _logger;
+    private readonly GitHubActionsDispatcher _actionsDispatcher;
 
     public ProductsController(
-        HBScraper hbscraper,
-        TYScraper tyscraper,
         PriceRadarDbContext context,
-        ILogger<ProductsController> logger)
+        ILogger<ProductsController> logger,
+        GitHubActionsDispatcher actionsDispatcher)
     {
-        _HBScraper = hbscraper;
-        _TYScraper = tyscraper;
         _context = context;
         _logger = logger;
+        _actionsDispatcher = actionsDispatcher;
     }
 
 
@@ -56,62 +52,44 @@ public class ProductsController : Controller
             return View(productUrl);
         }
 
-        ScrapedProduct scrapedProduct;
-        try
+        if (productUrl.Marketplace != "Hepsiburada"
+            && productUrl.Marketplace != "Trendyol")
         {
-            _logger.LogInformation(
-                "Starting scrape. Marketplace={Marketplace}; Url={Url}",
-                productUrl.Marketplace,
-                productUrl.Url);
-
-            if (productUrl.Marketplace == "Trendyol")
-            {
-                scrapedProduct =
-                    await _TYScraper.ScrapeProductAsync(productUrl.Url);
-            }
-            else if (productUrl.Marketplace == "Hepsiburada")
-            {
-                scrapedProduct =
-                    await _HBScraper.ScrapeProductAsync(productUrl.Url);
-            }
-            else
-            {
-                throw new InvalidOperationException(
-                    $"Unsupported marketplace: {productUrl.Marketplace}");
-            }
-
-            _logger.LogInformation(
-                "Scrape completed. Marketplace={Marketplace}; ProductName={ProductName}; Price={Price}",
-                productUrl.Marketplace,
-                scrapedProduct.ProductName,
-                scrapedProduct.Price);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "Scraping failed. Marketplace={Marketplace}; Url={Url}",
-                productUrl.Marketplace,
-                productUrl.Url);
-
             ModelState.AddModelError(
                 string.Empty,
-                "The product could not be scraped. Check the URL and try again.");
+                "Please choose a supported marketplace.");
 
             return View(productUrl);
         }
 
-        await _context.TrackedProducts.AddAsync(new TrackedProduct
+        TrackedProduct trackedProduct = new()
         {
-            ProductName = scrapedProduct.ProductName,
-            CurrentPrice = scrapedProduct.Price,
+            ProductName = null,
+            CurrentPrice = null,
             Url = productUrl.Url,
             Marketplace = productUrl.Marketplace,
             IsActive = true,
             CreatedAt = DateTime.UtcNow
-        });
+        };
+
+        await _context.TrackedProducts.AddAsync(trackedProduct);
 
         await _context.SaveChangesAsync();
+
+        _logger.LogInformation(
+            "Saved product as pending initial scrape. ProductId={ProductId}; " +
+            "Marketplace={Marketplace}; Url={Url}",
+            trackedProduct.Id,
+            trackedProduct.Marketplace,
+            trackedProduct.Url);
+
+        bool workflowDispatched =
+            await _actionsDispatcher.TryDispatchPriceCheckAsync();
+
+        TempData["AddProductMessage"] = workflowDispatched
+            ? "Product added. Initial price check started."
+            : "Product added. Initial price check will run with the next scheduled check.";
+
         return RedirectToAction(nameof(Index));
     }
 

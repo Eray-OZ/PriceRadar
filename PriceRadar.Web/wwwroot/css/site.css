@@ -421,6 +421,24 @@ p {
   color: var(--red);
 }
 
+.status-pending {
+  border-color: var(--orange);
+  color: var(--orange);
+}
+
+.tracker-notice {
+  margin: 0 0 18px;
+  border-left: 4px solid var(--orange);
+  padding: 12px 14px;
+  background: var(--panel);
+  color: var(--orange);
+  font-family: var(--font-data);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .status-dot {
   display: inline-block;
   width: 9px;

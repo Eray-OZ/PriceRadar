@@ -1,6 +1,6 @@
 using PriceRadar.Data.Context;
 using Microsoft.EntityFrameworkCore;
-using PriceRadar.Scraping.Services;
+using PriceRadar.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,8 +17,10 @@ builder.Services.AddDbContext<PriceRadarDbContext>(options =>
 options.UseNpgsql(connectionString));
 
 
-builder.Services.AddScoped<HBScraper>();
-builder.Services.AddScoped<TYScraper>();
+builder.Services.AddHttpClient<GitHubActionsDispatcher>(client =>
+{
+    client.BaseAddress = new Uri("https://api.github.com/");
+});
 
 
 var app = builder.Build();

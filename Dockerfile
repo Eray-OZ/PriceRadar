@@ -5,7 +5,6 @@ WORKDIR /src
 
 COPY ["PriceRadar.Web/PriceRadar.Web.csproj", "PriceRadar.Web/"]
 COPY ["PriceRadar.Data/PriceRadar.Data.csproj", "PriceRadar.Data/"]
-COPY ["PriceRadar.Scraping/PriceRadar.Scraping.csproj", "PriceRadar.Scraping/"]
 
 RUN dotnet restore "PriceRadar.Web/PriceRadar.Web.csproj"
 
@@ -18,26 +17,10 @@ RUN dotnet publish "PriceRadar.Web.csproj" \
     /p:UseAppHost=false
 
 
-# Run the published Web application with Google Chrome available for Playwright.
+# Run the lightweight Web application. Scraping runs in GitHub Actions.
 FROM mcr.microsoft.com/dotnet/aspnet:10.0-noble AS final
 
 WORKDIR /app
-
-RUN apt-get update \
-    && apt-get install --yes --no-install-recommends \
-        ca-certificates \
-        curl \
-        fonts-liberation \
-        gnupg \
-        wget \
-    && mkdir --parents --mode=0755 /etc/apt/keyrings \
-    && curl --fail --silent --show-error https://dl.google.com/linux/linux_signing_key.pub \
-        | gpg --dearmor --output /etc/apt/keyrings/google-chrome.gpg \
-    && echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" \
-        > /etc/apt/sources.list.d/google-chrome.list \
-    && apt-get update \
-    && apt-get install --yes --no-install-recommends google-chrome-stable \
-    && rm --recursive --force /var/lib/apt/lists/*
 
 RUN useradd --create-home --shell /usr/sbin/nologin appuser
 

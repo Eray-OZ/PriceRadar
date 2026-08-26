@@ -119,7 +119,30 @@ public class PriceCheckJob
             scrapedProduct.Url);
 
         DateTime t = DateTime.UtcNow;
-        decimal oldPrice = product.CurrentPrice;
+
+        if (!product.CurrentPrice.HasValue)
+        {
+            product.ProductName = scrapedProduct.ProductName;
+            product.SellerName = scrapedProduct.SellerName;
+            product.CurrentPrice = scrapedProduct.Price;
+            product.LastCheckedAt = t;
+
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation(
+                "[INITIAL SCRAPE SAVED] ProductId={ProductId}; " +
+                "Marketplace='{Marketplace}'; ProductName='{ProductName}'; " +
+                "InitialPrice={InitialPrice}; Url={Url}",
+                product.Id,
+                marketplace,
+                scrapedProduct.ProductName,
+                scrapedProduct.Price,
+                product.Url);
+
+            return;
+        }
+
+        decimal oldPrice = product.CurrentPrice.Value;
 
         if (scrapedProduct.Price != oldPrice)
         {

@@ -17,6 +17,11 @@
         </div>
     </div>
 
+    @if (TempData["AddProductMessage"] is string addProductMessage)
+    {
+        <p class="tracker-notice">@addProductMessage</p>
+    }
+
     @if (Model.Count == 0)
     {
         <section class="empty-state brutal-panel">
@@ -60,6 +65,9 @@
                             var marketplaceClass = string.Equals(product.Marketplace, "Trendyol", StringComparison.OrdinalIgnoreCase)
                                 ? "marketplace-trendyol"
                                 : "marketplace-hepsiburada";
+                            var displayName = string.IsNullOrWhiteSpace(product.ProductName)
+                                ? "İlk kontrol bekleniyor"
+                                : product.ProductName;
                             var lastChecked = product.LastCheckedAt.HasValue
                                 ? product.LastCheckedAt.Value.ToLocalTime().ToString("dd MMM HH:mm")
                                 : "—";
@@ -70,23 +78,34 @@
                                 </td>
                                 <td data-label="Ürün adı">
                                     <div class="product-info">
-                                        <strong class="product-name" title="@product.ProductName">@product.ProductName</strong>
+                                        <strong class="product-name" title="@displayName">@displayName</strong>
                                         <a class="product-url" href="@product.Url" target="_blank" rel="noopener noreferrer">ÜRÜNÜ AÇ <span aria-hidden="true">↗</span></a>
                                     </div>
                                 </td>
                                 <td class="seller-cell" data-label="Satıcı">@(string.IsNullOrWhiteSpace(product.SellerName) ? "Bilinmiyor" : product.SellerName)</td>
                                 <td class="price-cell" data-label="Güncel fiyat">
-                                    ₺@product.CurrentPrice.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo("tr-TR"))
-                                </td>
-                                <td class="checked-cell" data-label="Son kontrol">@lastChecked</td>
-                                <td data-label="Durum">
-                                    @if (product.IsActive)
+                                    @if (product.CurrentPrice.HasValue)
                                     {
-                                        <span class="status-badge status-active"><span class="status-dot"></span> AKTİF</span>
+                                        @:₺@product.CurrentPrice.Value.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo("tr-TR"))
                                     }
                                     else
                                     {
+                                        <span>BEKLENİYOR</span>
+                                    }
+                                </td>
+                                <td class="checked-cell" data-label="Son kontrol">@lastChecked</td>
+                                <td data-label="Durum">
+                                    @if (!product.IsActive)
+                                    {
                                         <span class="status-badge status-paused"><span class="status-dot"></span> DURAKLATILDI</span>
+                                    }
+                                    else if (!product.CurrentPrice.HasValue)
+                                    {
+                                        <span class="status-badge status-pending"><span class="status-dot"></span> İLK KONTROL BEKLENİYOR</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status-badge status-active"><span class="status-dot"></span> AKTİF</span>
                                     }
                                 </td>
                                 <td class="actions-cell" data-label="İşlem">
@@ -94,7 +113,7 @@
                                     {
                                         <form asp-controller="Products" asp-action="DisableTracking" method="post" class="inline-form">
                                             <input type="hidden" name="id" value="@product.Id" />
-                                            <button class="icon-button" type="submit" aria-label="@product.ProductName takibini duraklat">Ⅱ</button>
+                                            <button class="icon-button" type="submit" aria-label="@displayName takibini duraklat">Ⅱ</button>
                                         </form>
                                     }
                                     else

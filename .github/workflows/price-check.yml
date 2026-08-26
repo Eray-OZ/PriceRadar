@@ -9,6 +9,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: price-radar-price-check
+  cancel-in-progress: false
+
 jobs:
   price-check:
     runs-on: ubuntu-latest
