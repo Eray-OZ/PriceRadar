@@ -68,8 +68,10 @@ public class ProductsController : Controller
             return View(productUrl);
         }
 
-        if (productUrl.Marketplace != "Hepsiburada"
-            && productUrl.Marketplace != "Trendyol")
+        string marketplace = productUrl.Marketplace.Trim();
+
+        if (marketplace != "Hepsiburada"
+            && marketplace != "Trendyol")
         {
             ModelState.AddModelError(
                 string.Empty,
@@ -78,12 +80,28 @@ public class ProductsController : Controller
             return View(productUrl);
         }
 
+        string normalizedUrl = productUrl.Url.Trim().TrimEnd('/');
+        bool duplicateExists = await _context.TrackedProducts
+            .AnyAsync(product =>
+                product.UserId == userId
+                && product.Marketplace == marketplace
+                && product.Url == normalizedUrl);
+
+        if (duplicateExists)
+        {
+            ModelState.AddModelError(
+                nameof(productUrl.Url),
+                "This product is already being tracked. Resume it from your product list if it is paused.");
+
+            return View(productUrl);
+        }
+
         TrackedProduct trackedProduct = new()
         {
             ProductName = null,
             CurrentPrice = null,
-            Url = productUrl.Url,
-            Marketplace = productUrl.Marketplace,
+            Url = normalizedUrl,
+            Marketplace = marketplace,
             IsActive = true,
             CreatedAt = DateTime.UtcNow,
             UserId = userId
