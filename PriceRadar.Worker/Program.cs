@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 
 
@@ -27,7 +28,14 @@ builder.Services.AddScoped<PriceCheckJob>();
 builder.Services.AddScoped<HBScraper>();
 builder.Services.AddScoped<TYScraper>();
 
-builder.Services.AddHttpClient<TelegramNotifier>();
+builder.Services.AddHttpClient<TelegramNotifier>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
+builder.Logging.AddFilter(
+    "System.Net.Http.HttpClient.TelegramNotifier",
+    LogLevel.None);
 
 using IHost app = builder.Build();
 

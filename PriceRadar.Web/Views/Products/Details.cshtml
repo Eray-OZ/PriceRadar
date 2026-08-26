@@ -1,0 +1,99 @@
+﻿@model PriceRadar.Data.Entities.TrackedProduct
+@using System.Globalization
+
+@{
+    ViewData["Title"] = "Product Details";
+    var displayName = string.IsNullOrWhiteSpace(Model.ProductName)
+        ? "İlk kontrol bekleniyor"
+        : Model.ProductName;
+    var marketplaceClass = string.Equals(Model.Marketplace, "Trendyol", StringComparison.OrdinalIgnoreCase)
+        ? "marketplace-trendyol"
+        : "marketplace-hepsiburada";
+    var turkishCulture = CultureInfo.GetCultureInfo("tr-TR");
+}
+
+<section class="details-page">
+    <a class="back-link" asp-controller="Products" asp-action="Index">← TAKİP EDİLENLERE DÖN</a>
+
+    <article class="details-card brutal-panel">
+        <header class="details-card-header">
+            <span class="marketplace-badge @marketplaceClass">@Model.Marketplace</span>
+            <p class="eyebrow">PRICE MONITOR / PRODUCT DETAILS</p>
+            <h1>@displayName</h1>
+            <a class="details-external-link" href="@Model.Url" target="_blank" rel="noopener noreferrer">
+                ÜRÜNÜ AÇ <span aria-hidden="true">↗</span>
+            </a>
+        </header>
+
+        <div class="details-card-body">
+            <div class="details-grid">
+                <div class="detail-item">
+                    <span class="detail-label">SATICI</span>
+                    <strong>@(string.IsNullOrWhiteSpace(Model.SellerName) ? "Bilinmiyor" : Model.SellerName)</strong>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">GÜNCEL FİYAT</span>
+                    @if (Model.CurrentPrice.HasValue)
+                    {
+                        <strong class="detail-price">₺@Model.CurrentPrice.Value.ToString("N2", turkishCulture)</strong>
+                    }
+                    else
+                    {
+                        <strong class="detail-price">BEKLENİYOR</strong>
+                    }
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">SON KONTROL</span>
+                    <strong>
+                        @(Model.LastCheckedAt.HasValue
+                            ? Model.LastCheckedAt.Value.ToLocalTime().ToString("dd MMM yyyy HH:mm")
+                            : "—")
+                    </strong>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">DURUM</span>
+                    <strong class="@(Model.IsActive ? "detail-active" : "detail-paused")">
+                        @(Model.IsActive ? "AKTİF" : "DURAKLATILDI")
+                    </strong>
+                </div>
+            </div>
+
+            <section class="history-section" aria-labelledby="history-heading">
+                <div class="details-section-heading">
+                    <div>
+                        <p class="eyebrow">PRICE LOG</p>
+                        <h2 id="history-heading">Fiyat geçmişi</h2>
+                    </div>
+                    <span class="history-count">@Model.PriceHistories.Count KAYIT</span>
+                </div>
+
+                @if (Model.PriceHistories.Count == 0)
+                {
+                    <p class="history-empty">Henüz fiyat değişikliği kaydedilmedi.</p>
+                }
+                else
+                {
+                    <div class="history-table-scroll">
+                        <table class="history-table">
+                            <thead>
+                                <tr>
+                                    <th>FİYAT</th>
+                                    <th>KONTROL TARİHİ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var history in Model.PriceHistories.OrderByDescending(history => history.CheckedAt))
+                                {
+                                    <tr>
+                                        <td class="history-price">₺@history.Price.ToString("N2", turkishCulture)</td>
+                                        <td>@history.CheckedAt.ToLocalTime().ToString("dd MMM yyyy HH:mm")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </section>
+        </div>
+    </article>
+</section>

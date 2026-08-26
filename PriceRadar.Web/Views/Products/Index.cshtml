@@ -80,6 +80,7 @@
                                     <div class="product-info">
                                         <strong class="product-name" title="@displayName">@displayName</strong>
                                         <a class="product-url" href="@product.Url" target="_blank" rel="noopener noreferrer">ÜRÜNÜ AÇ <span aria-hidden="true">↗</span></a>
+                                        <a class="product-history-link" asp-controller="Products" asp-action="Details" asp-route-id="@product.Id">FİYAT GEÇMİŞİ <span aria-hidden="true">→</span></a>
                                     </div>
                                 </td>
                                 <td class="seller-cell" data-label="Satıcı">@(string.IsNullOrWhiteSpace(product.SellerName) ? "Bilinmiyor" : product.SellerName)</td>

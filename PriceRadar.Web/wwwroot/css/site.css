@@ -429,6 +429,22 @@ p {
   text-decoration: underline;
 }
 
+.product-history-link {
+  display: inline-block;
+  margin-top: 10px;
+  margin-left: 14px;
+  color: var(--muted);
+  font-family: var(--font-data);
+  font-size: .65rem;
+  font-weight: 800;
+  letter-spacing: .05em;
+}
+
+.product-history-link:hover {
+  color: var(--blue);
+  text-decoration: underline;
+}
+
 .seller-cell,
 .checked-cell {
   color: var(--muted);
@@ -821,6 +837,175 @@ fieldset.field-group {
   letter-spacing: .06em;
 }
 
+.details-page {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.details-card {
+  overflow: hidden;
+  border-color: var(--blue);
+  box-shadow: 8px 8px 0 var(--blue);
+}
+
+.details-card-header {
+  padding: 34px 40px;
+  background: var(--blue);
+}
+
+.details-card-header .eyebrow {
+  margin-top: 26px;
+  color: var(--white);
+}
+
+.details-card-header h1 {
+  max-width: 850px;
+  margin: 0 0 22px;
+  color: var(--white);
+  font-size: clamp(2rem, 5vw, 3.8rem);
+  font-weight: 900;
+  letter-spacing: -.055em;
+  line-height: 1.04;
+  overflow-wrap: anywhere;
+}
+
+.details-external-link {
+  color: var(--white);
+  font-family: var(--font-data);
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+
+.details-external-link:hover {
+  text-decoration: underline;
+}
+
+.details-card-body {
+  padding: 40px;
+  background: var(--surface);
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 2px;
+  border: 2px solid var(--white);
+  background: var(--white);
+}
+
+.detail-item {
+  min-width: 0;
+  min-height: 112px;
+  padding: 18px;
+  background: var(--black);
+}
+
+.detail-label {
+  display: block;
+  margin-bottom: 14px;
+  color: var(--muted);
+  font-family: var(--font-data);
+  font-size: .68rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+
+.detail-item strong {
+  display: block;
+  color: var(--white);
+  overflow-wrap: anywhere;
+}
+
+.detail-price {
+  color: var(--blue) !important;
+  font-family: var(--font-data);
+  font-size: 1.18rem;
+}
+
+.detail-active {
+  color: var(--blue) !important;
+}
+
+.detail-paused {
+  color: var(--red) !important;
+}
+
+.history-section {
+  margin-top: 52px;
+}
+
+.details-section-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+
+.details-section-heading .eyebrow {
+  margin-bottom: 12px;
+}
+
+.details-section-heading h2 {
+  margin: 0;
+  color: var(--white);
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  letter-spacing: -.05em;
+}
+
+.history-count {
+  flex-shrink: 0;
+  color: var(--muted);
+  font-family: var(--font-data);
+  font-size: .7rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+
+.history-empty {
+  margin: 0;
+  border: 2px solid var(--line-muted);
+  padding: 24px;
+  color: var(--muted);
+  font-family: var(--font-data);
+  font-size: .8rem;
+}
+
+.history-table-scroll {
+  overflow-x: auto;
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--white);
+  font-family: var(--font-data);
+}
+
+.history-table th,
+.history-table td {
+  border: 2px solid var(--line-muted);
+  padding: 16px 18px;
+  text-align: left;
+}
+
+.history-table th {
+  background: var(--black);
+  color: var(--muted);
+  font-size: .68rem;
+  letter-spacing: .08em;
+}
+
+.history-table td {
+  font-size: .8rem;
+}
+
+.history-price {
+  color: var(--blue);
+  font-weight: 800;
+}
+
 .mobile-nav {
   display: none;
 }
@@ -1023,6 +1208,12 @@ fieldset.field-group {
     display: none;
   }
 
+  .product-history-link {
+    display: block;
+    margin-top: 8px;
+    margin-left: 0;
+  }
+
   .seller-cell {
     margin-top: 8px;
     color: var(--muted);
@@ -1189,6 +1380,37 @@ fieldset.field-group {
   .empty-state {
     min-height: 300px;
     padding: 32px 20px;
+  }
+
+  .details-card {
+    box-shadow: 6px 6px 0 var(--blue);
+  }
+
+  .details-card-header {
+    padding: 26px 22px;
+  }
+
+  .details-card-header h1 {
+    font-size: clamp(2rem, 9vw, 2.7rem);
+  }
+
+  .details-card-body {
+    padding: 26px 22px 32px;
+  }
+
+  .details-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .detail-item {
+    min-height: 100px;
+    padding: 15px;
+  }
+
+  .details-section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
   }
 }
 

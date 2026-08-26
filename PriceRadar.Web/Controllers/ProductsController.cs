@@ -44,6 +44,28 @@ public class ProductsController : Controller
         return View(trackedProducts);
     }
 
+    [HttpGet]
+    public async Task<IActionResult> Details(int Id)
+    {
+        if (!TryGetCurrentUserId(out int userId))
+        {
+            return Challenge();
+        }
+
+        TrackedProduct? trackedProduct = await _context.TrackedProducts
+            .AsNoTracking()
+            .Include(product => product.PriceHistories)
+            .SingleOrDefaultAsync(product =>
+                product.Id == Id && product.UserId == userId);
+
+        if (trackedProduct is null)
+        {
+            return NotFound();
+        }
+
+        return View(trackedProduct);
+    }
+
 
     [HttpGet]
     public IActionResult Add()

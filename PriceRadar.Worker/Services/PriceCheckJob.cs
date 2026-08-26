@@ -172,14 +172,16 @@ public class PriceCheckJob
             product.CurrentPrice = scrapedProduct.Price;
             product.LastCheckedAt = t;
             await _context.SaveChangesAsync();
-            await _telegram.SendPriceChangeNotificationAsync(message);
+            bool notificationSent =
+                await _telegram.SendPriceChangeNotificationAsync(message);
 
             _logger.LogInformation(
                 "[PRICE CHECK CHANGED] ProductId={ProductId}; OldPrice={OldPrice}; " +
-                "NewPrice={NewPrice}; PriceHistorySaved=true; TelegramRequested=true",
+                "NewPrice={NewPrice}; PriceHistorySaved=true; TelegramSent={TelegramSent}",
                 product.Id,
                 oldPrice,
-                scrapedProduct.Price);
+                scrapedProduct.Price,
+                notificationSent);
         }
         else
         {
