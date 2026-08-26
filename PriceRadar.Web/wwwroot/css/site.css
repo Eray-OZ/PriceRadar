@@ -443,8 +443,8 @@ p {
 
 .icon-button {
   display: inline-grid;
-  width: 38px;
-  height: 38px;
+  width: 30px;
+  height: 30px;
   place-items: center;
   border: 2px solid var(--white);
   border-radius: 0;
@@ -452,7 +452,7 @@ p {
   color: var(--white);
   cursor: pointer;
   font-family: var(--font-data);
-  font-size: 1.1rem;
+  font-size: .9rem;
   font-weight: 800;
   line-height: 1;
 }
@@ -935,32 +935,21 @@ fieldset.field-group {
   }
 
   .actions-cell {
-    display: grid !important;
-    grid-template-columns: 1fr;
-    gap: 22px;
+    display: flex !important;
+    align-items: center;
+    justify-content: flex-start;
     margin-top: 20px;
   }
 
   .actions-cell .inline-form {
-    display: block;
+    display: inline-flex;
   }
 
   .actions-cell .icon-button {
-    width: auto;
-    min-width: 150px;
-    height: 56px;
-    font-size: .82rem;
-  }
-
-  .actions-cell .inline-form .icon-button::after {
-    margin-left: 8px;
-    font-family: var(--font-data);
-    font-size: .7rem;
-    letter-spacing: .06em;
-  }
-
-  .actions-cell .inline-form .icon-button::after {
-    content: "DURAKLAT";
+    width: 30px;
+    min-width: 30px;
+    height: 30px;
+    font-size: .9rem;
   }
 
   .add-page {

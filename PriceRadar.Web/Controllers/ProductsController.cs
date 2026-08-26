@@ -14,12 +14,18 @@ public class ProductsController : Controller
     private readonly HBScraper _HBScraper;
     private readonly TYScraper _TYScraper;
     private readonly PriceRadarDbContext _context;
+    private readonly ILogger<ProductsController> _logger;
 
-    public ProductsController(HBScraper hbscraper, TYScraper tyscraper, PriceRadarDbContext context)
+    public ProductsController(
+        HBScraper hbscraper,
+        TYScraper tyscraper,
+        PriceRadarDbContext context,
+        ILogger<ProductsController> logger)
     {
         _HBScraper = hbscraper;
         _TYScraper = tyscraper;
         _context = context;
+        _logger = logger;
     }
 
 
@@ -53,6 +59,11 @@ public class ProductsController : Controller
         ScrapedProduct scrapedProduct;
         try
         {
+            _logger.LogInformation(
+                "Starting scrape. Marketplace={Marketplace}; Url={Url}",
+                productUrl.Marketplace,
+                productUrl.Url);
+
             if (productUrl.Marketplace == "Trendyol")
             {
                 scrapedProduct =
@@ -68,9 +79,25 @@ public class ProductsController : Controller
                 throw new InvalidOperationException(
                     $"Unsupported marketplace: {productUrl.Marketplace}");
             }
+
+            _logger.LogInformation(
+                "Scrape completed. Marketplace={Marketplace}; ProductName={ProductName}; Price={Price}",
+                productUrl.Marketplace,
+                scrapedProduct.ProductName,
+                scrapedProduct.Price);
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.LogError(
+                ex,
+                "Scraping failed. Marketplace={Marketplace}; Url={Url}",
+                productUrl.Marketplace,
+                productUrl.Url);
+
+            ModelState.AddModelError(
+                string.Empty,
+                "The product could not be scraped. Check the URL and try again.");
+
             return View(productUrl);
         }
 
