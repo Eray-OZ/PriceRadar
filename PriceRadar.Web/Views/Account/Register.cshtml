@@ -1,0 +1,51 @@
+﻿@model PriceRadar.Web.Models.RegisterViewModel
+
+@{
+    ViewData["Title"] = "Create Account";
+}
+
+<section class="account-page">
+    <div class="account-card brutal-panel">
+        <div class="account-card-header">
+            <p class="eyebrow">PRICERADAR / CREATE ACCOUNT</p>
+            <h1>Create account</h1>
+            <p class="page-subtitle">Create an account to get started with PriceRadar.</p>
+        </div>
+
+        <form asp-controller="Account" asp-action="Register" method="post" class="account-form">
+            <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+
+            <div class="field-group">
+                <label asp-for="Name">NAME</label>
+                <input asp-for="Name" class="text-input" autocomplete="name" />
+                <span asp-validation-for="Name" class="validation-message"></span>
+            </div>
+
+            <div class="field-group">
+                <label asp-for="UserName">USERNAME</label>
+                <input asp-for="UserName" class="text-input" autocomplete="username" />
+                <span asp-validation-for="UserName" class="validation-message"></span>
+            </div>
+
+            <div class="field-group">
+                <label asp-for="Password">PASSWORD</label>
+                <input asp-for="Password" class="text-input" autocomplete="new-password" />
+                <span asp-validation-for="Password" class="validation-message"></span>
+            </div>
+
+            <div class="field-group">
+                <label asp-for="ConfirmPassword">CONFIRM PASSWORD</label>
+                <input asp-for="ConfirmPassword" class="text-input" autocomplete="new-password" />
+                <span asp-validation-for="ConfirmPassword" class="validation-message"></span>
+            </div>
+
+            <button class="brutal-button brutal-button-primary submit-button" type="submit">CREATE ACCOUNT</button>
+        </form>
+
+        <p class="account-switch">Already have an account? <a asp-action="Login">Log in</a></p>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

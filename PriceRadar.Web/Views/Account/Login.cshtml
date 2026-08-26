@@ -1,0 +1,45 @@
+﻿@model PriceRadar.Web.Models.LoginViewModel
+
+@{
+    ViewData["Title"] = "Log In";
+}
+
+<section class="account-page">
+    <div class="account-card brutal-panel">
+        <div class="account-card-header">
+            <p class="eyebrow">PRICERADAR / WELCOME BACK</p>
+            <h1>Log in</h1>
+            <p class="page-subtitle">Continue managing your tracked products.</p>
+        </div>
+
+        <form asp-controller="Account" asp-action="Login" method="post" class="account-form">
+            <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
+            <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+
+            <div class="field-group">
+                <label asp-for="UserName">USERNAME</label>
+                <input asp-for="UserName" class="text-input" autocomplete="username" />
+                <span asp-validation-for="UserName" class="validation-message"></span>
+            </div>
+
+            <div class="field-group">
+                <label asp-for="Password">PASSWORD</label>
+                <input asp-for="Password" class="text-input" autocomplete="current-password" />
+                <span asp-validation-for="Password" class="validation-message"></span>
+            </div>
+
+            <label class="remember-option">
+                <input asp-for="RememberMe" />
+                <span>KEEP ME SIGNED IN</span>
+            </label>
+
+            <button class="brutal-button brutal-button-primary submit-button" type="submit">LOG IN</button>
+        </form>
+
+        <p class="account-switch">Need an account? <a asp-action="Register">Create one</a></p>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

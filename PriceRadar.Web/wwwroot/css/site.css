@@ -159,6 +159,45 @@ select:focus-visible {
   font-size: 1.05rem;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.signed-in-user,
+.auth-link,
+.auth-button {
+  color: var(--muted);
+  font-family: var(--font-data);
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.auth-link:hover {
+  color: var(--blue);
+}
+
+.auth-button {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--white);
+  border-radius: 0;
+  background: transparent;
+  color: var(--white);
+  cursor: pointer;
+  padding: 0 12px;
+}
+
+.auth-button:hover {
+  background: var(--white);
+  color: var(--black);
+}
+
 .header-add span,
 .brutal-button span {
   font-family: var(--font-data);
@@ -724,6 +763,59 @@ fieldset.field-group {
   font-size: 1.15rem;
 }
 
+.account-page {
+  display: grid;
+  min-height: 65vh;
+  place-items: center;
+}
+
+.account-card {
+  width: min(100%, 560px);
+  box-shadow: 8px 8px 0 var(--white);
+}
+
+.account-card-header {
+  border-bottom: 4px solid var(--white);
+  padding: 32px;
+}
+
+.account-card-header h1 {
+  margin: 0 0 12px;
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  letter-spacing: -.055em;
+  line-height: 1;
+}
+
+.account-form {
+  display: grid;
+  gap: 24px;
+  padding: 32px;
+}
+
+.account-switch {
+  margin: 0;
+  border-top: 4px solid var(--white);
+  padding: 24px 32px 32px;
+  color: var(--muted);
+  font-size: .95rem;
+}
+
+.account-switch a {
+  color: var(--blue);
+  font-weight: 800;
+}
+
+.remember-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-family: var(--font-data);
+  font-size: .75rem;
+  font-weight: 800;
+  letter-spacing: .06em;
+}
+
 .mobile-nav {
   display: none;
 }
@@ -748,6 +840,21 @@ fieldset.field-group {
 
   .main-nav {
     display: none;
+  }
+
+  .header-actions {
+    gap: 8px;
+  }
+
+  .signed-in-user,
+  .auth-link {
+    display: none;
+  }
+
+  .auth-button {
+    min-height: 42px;
+    padding: 0 8px;
+    font-size: .63rem;
   }
 
   .header-add {

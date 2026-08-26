@@ -24,10 +24,25 @@
                     <a class="nav-link nav-link-active" asp-area="" asp-controller="Products" asp-action="Index">TAKİP EDİLENLER</a>
                 </nav>
 
-                <a class="header-add" asp-area="" asp-controller="Products" asp-action="Add">
-                    <span aria-hidden="true">+</span>
-                    YENİ ÜRÜN EKLE
-                </a>
+                <div class="header-actions">
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <span class="signed-in-user">@User.Identity.Name</span>
+                        <form asp-controller="Account" asp-action="Logout" method="post" class="inline-form">
+                            <button class="auth-button" type="submit">LOG OUT</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <a class="auth-link" asp-controller="Account" asp-action="Login">LOG IN</a>
+                        <a class="auth-button" asp-controller="Account" asp-action="Register">CREATE ACCOUNT</a>
+                    }
+
+                    <a class="header-add" asp-area="" asp-controller="Products" asp-action="Add">
+                        <span aria-hidden="true">+</span>
+                        YENİ ÜRÜN EKLE
+                    </a>
+                </div>
             </div>
         </header>
 
