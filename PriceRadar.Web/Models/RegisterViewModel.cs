@@ -4,10 +4,6 @@ namespace PriceRadar.Web.Models;
 
 public class RegisterViewModel
 {
-    [Required(ErrorMessage = "Name is required.")]
-    [StringLength(100, MinimumLength = 2, ErrorMessage = "Name must be between 2 and 100 characters.")]
-    public string Name { get; set; } = string.Empty;
-
     [Required(ErrorMessage = "Username is required.")]
     [StringLength(50, MinimumLength = 3, ErrorMessage = "Username must be between 3 and 50 characters.")]
     [RegularExpression(

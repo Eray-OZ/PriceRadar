@@ -20,9 +20,12 @@
                     <span class="brand-name">PRICERADAR</span>
                 </a>
 
-                <nav class="main-nav" aria-label="Ana navigasyon">
-                    <a class="nav-link nav-link-active" asp-area="" asp-controller="Products" asp-action="Index">TAKİP EDİLENLER</a>
-                </nav>
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <nav class="main-nav" aria-label="Ana navigasyon">
+                        <a class="nav-link nav-link-active" asp-area="" asp-controller="Products" asp-action="Index">TAKİP EDİLENLER</a>
+                    </nav>
+                }
 
                 <div class="header-actions">
                     @if (User.Identity?.IsAuthenticated == true)
@@ -38,10 +41,13 @@
                         <a class="auth-button" asp-controller="Account" asp-action="Register">CREATE ACCOUNT</a>
                     }
 
-                    <a class="header-add" asp-area="" asp-controller="Products" asp-action="Add">
-                        <span aria-hidden="true">+</span>
-                        YENİ ÜRÜN EKLE
-                    </a>
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <a class="header-add" asp-area="" asp-controller="Products" asp-action="Add">
+                            <span aria-hidden="true">+</span>
+                            YENİ ÜRÜN EKLE
+                        </a>
+                    }
                 </div>
             </div>
         </header>
@@ -50,16 +56,19 @@
             @RenderBody()
         </main>
 
-        <nav class="mobile-nav" aria-label="Mobil navigasyon">
-            <a class="mobile-nav-link mobile-nav-link-active" asp-area="" asp-controller="Products" asp-action="Index">
-                <span aria-hidden="true">▥</span>
-                <small>TAKİP</small>
-            </a>
-            <a class="mobile-nav-link" asp-area="" asp-controller="Products" asp-action="Add">
-                <span aria-hidden="true">＋</span>
-                <small>YENİ ÜRÜN</small>
-            </a>
-        </nav>
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <nav class="mobile-nav" aria-label="Mobil navigasyon">
+                <a class="mobile-nav-link mobile-nav-link-active" asp-area="" asp-controller="Products" asp-action="Index">
+                    <span aria-hidden="true">▥</span>
+                    <small>TAKİP</small>
+                </a>
+                <a class="mobile-nav-link" asp-area="" asp-controller="Products" asp-action="Add">
+                    <span aria-hidden="true">＋</span>
+                    <small>YENİ ÜRÜN</small>
+                </a>
+            </nav>
+        }
     </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

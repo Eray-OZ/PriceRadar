@@ -54,7 +54,6 @@ public class AccountController : Controller
 
         ApplicationUser user = new()
         {
-            Name = model.Name.Trim(),
             UserName = userName,
             CreatedAt = DateTime.UtcNow
         };
@@ -134,8 +133,7 @@ public class AccountController : Controller
         List<Claim> claims =
         [
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Name, user.UserName),
-            new Claim(ClaimTypes.GivenName, user.Name)
+            new Claim(ClaimTypes.Name, user.UserName)
         ];
 
         ClaimsIdentity identity = new(

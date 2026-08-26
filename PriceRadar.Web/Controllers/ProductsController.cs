@@ -4,9 +4,11 @@ using PriceRadar.Data.Context;
 using PriceRadar.Data.Entities;
 using PriceRadar.Web.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 namespace PriceRadar.Web.Controllers;
 
+[Authorize]
 public class ProductsController : Controller
 {
 

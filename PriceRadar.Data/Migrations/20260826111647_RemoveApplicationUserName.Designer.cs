@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PriceRadar.Data.Context;
@@ -11,9 +12,11 @@ using PriceRadar.Data.Context;
 namespace PriceRadar.Data.Migrations
 {
     [DbContext(typeof(PriceRadarDbContext))]
-    partial class PriceRadarDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260826111647_RemoveApplicationUserName")]
+    partial class RemoveApplicationUserName
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
